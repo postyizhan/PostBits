@@ -54,28 +54,23 @@ class PostBits : JavaPlugin() {
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
             updateChecker = UpdateChecker(this, "postyizhan/PostBits")
-            if (configManager.getConfig().getBoolean("update-checker.enabled", true)) {
-                updateChecker.checkForUpdates { isUpdateAvailable, newVersion ->
-                    if (isUpdateAvailable) {
-                        server.consoleSender.sendMessage(MessageUtil.color(
-                            MessageUtil.getMessage("system.updater.update_available")
-                                .replace("{current_version}", description.version)
-                                .replace("{latest_version}", newVersion)
-                        ))
-                        server.consoleSender.sendMessage(MessageUtil.color(
-                            MessageUtil.getMessage("system.updater.update_url")
-                                .replace("{current_version}", description.version)
-                                .replace("{latest_version}", newVersion)
-                        ))
-                    } else {
-                        if (debugEnabled) {
-                            logger.info("Debug: Plugin is up to date (${description.version})")
-                        }
-                        server.consoleSender.sendMessage(MessageUtil.color(
-                            MessageUtil.getMessage("system.updater.up_to_date")
-                                .replace("{current_version}", description.version)
-                        ))
+            updateChecker.checkForUpdates { isUpdateAvailable, newVersion ->
+                if (isUpdateAvailable) {
+                    server.consoleSender.sendMessage(MessageUtil.color(
+                        MessageUtil.getMessage("system.updater.update_available")
+                            .replace("{current_version}", description.version)
+                            .replace("{latest_version}", newVersion)
+                    ))
+                    server.consoleSender.sendMessage(MessageUtil.color(
+                        MessageUtil.getMessage("system.updater.update_url")
+                    ))
+                } else {
+                    if (debugEnabled) {
+                        logger.info("Debug: Plugin is up to date (${description.version})")
                     }
+                    server.consoleSender.sendMessage(MessageUtil.color(
+                        MessageUtil.getMessage("system.updater.up_to_date")
+                    ))
                 }
             }
         }
@@ -107,6 +102,14 @@ class PostBits : JavaPlugin() {
         configManager.loadAll()
         MessageUtil.init(this)
         debugEnabled = configManager.getConfig().getBoolean("debug", false)
+
+        // 重新初始化更新检查器
+        if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
+            if (!this::updateChecker.isInitialized) {
+                updateChecker = UpdateChecker(this, "postyizhan/PostBits")
+            }
+        }
+
         if (debugEnabled) {
             logger.info("Debug: Plugin configuration reloaded")
         }
@@ -121,6 +124,9 @@ class PostBits : JavaPlugin() {
             return
         }
 
+        // 显示检查中的消息
+        MessageUtil.sendMessage(sender, "system.updater.update_checking")
+
         updateChecker.checkForUpdates { isUpdateAvailable, newVersion ->
             if (isUpdateAvailable) {
                 val updateAvailableMsg = MessageUtil.getMessage("system.updater.update_available")
@@ -128,8 +134,6 @@ class PostBits : JavaPlugin() {
                     .replace("{latest_version}", newVersion)
 
                 val updateUrlMsg = MessageUtil.getMessage("system.updater.update_url")
-                    .replace("{current_version}", description.version)
-                    .replace("{latest_version}", newVersion)
 
                 sender.sendMessage(MessageUtil.color(updateAvailableMsg))
                 sender.sendMessage(MessageUtil.color(updateUrlMsg))

@@ -49,13 +49,8 @@ class ConfigManager(private val plugin: PostBits) {
         if (!config.contains("modules.update-checker.enabled")) {
             config.set("modules.update-checker.enabled", false)
         }
-        
-        // 更新检查配置
-        if (!config.contains("update-checker.enabled")) {
-            config.set("update-checker.enabled", true)
-        }
-        if (!config.contains("update-checker.check-interval-days")) {
-            config.set("update-checker.check-interval-days", 1)
+        if (!config.contains("modules.update-checker.check-interval-days")) {
+            config.set("modules.update-checker.check-interval-days", 1)
         }
         
         // 语言配置

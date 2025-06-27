@@ -4,38 +4,20 @@
 # 这是一个模块化的 Minecraft 插件，所有功能均可独立开关
 # 默认情况下所有模块都是关闭的，需要手动启用
 
+# 全局设置
+
+# 支持的语言：https://github.com/postyizhan/PostBits/tree/main/src/main/resources/lang
+language: zh_CN
+
+# 调试模式 (调试信息使用英文硬编码)
+debug: false
+
 # ===========================================
 # 模块开关 - 控制各个功能模块的启用状态
 # ===========================================
 modules:
   # 更新检查模块
   update-checker:
-    enabled: false  # 默认关闭
-
-  # 未来可以添加更多模块，例如：
-  # teleport:
-  #   enabled: false
-  # economy:
-  #   enabled: false
-  # chat:
-  #   enabled: false
-
-# ===========================================
-# 更新检查设置 (仅在模块启用时生效)
-# ===========================================
-update-checker:
-  # 是否启用更新检查
-  enabled: true
-  # 检查频率（天）
-  check-interval-days: 1
-
-# ===========================================
-# 全局设置
-# ===========================================
-
-# 语言设置
-# 支持的语言：https://github.com/postyizhan/PostBits/tree/main/src/main/resources/lang
-language: zh_CN
-
-# 调试模式 (调试信息使用英文硬编码)
-debug: false
+    enabled: true
+    # 检查频率（天）
+    check-interval-days: 1
