@@ -1,5 +1,32 @@
 prefix: "&8[&3Post&bBits&8] "
+
+# ===========================================
+# 基础消息
+# ===========================================
 messages:
-  enabled: "{prefix}&7插件已启用"
-  disabled: "{prefix}&7插件已卸载"
-  reload: "{prefix}&7插件重载成功！"
+  enabled: "{prefix}&a插件已启用"
+  disabled: "{prefix}&c插件已禁用"
+  reload: "{prefix}&a插件重载成功！"
+  reload_failed: "{prefix}&c插件重载失败，请查看控制台错误信息"
+  no_permission: "{prefix}&c你没有权限执行此命令"
+  unknown_command: "{prefix}&c未知命令，使用 &e/postbits &c查看帮助"
+  module_disabled: "{prefix}&c此模块已被禁用"
+
+# ===========================================
+# 命令帮助信息
+# ===========================================
+commands:
+  help:
+    header: "{prefix}&e=== PostBits 帮助 ==="
+    reload: "&e/postbits reload &7- &f重载插件配置"
+    update: "&e/postbits update &7- &f检查插件更新"
+
+# ===========================================
+# 更新检查系统消息
+# ===========================================
+system:
+  updater:
+    update_available: "{prefix}&e发现新版本：&a{latest_version}&e，当前版本：&c{current_version}"
+    update_url: "{prefix}&e下载地址：&bhttps://github.com/postyizhan/PostBits/releases/latest"
+    up_to_date: "{prefix}&a插件已是最新版本 &e{current_version}"
+    check_failed: "{prefix}&c更新检查失败，请稍后重试"

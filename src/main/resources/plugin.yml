@@ -2,5 +2,26 @@ name: PostBits
 version: '${version}'
 main: com.github.postyizhan.PostBits
 api-version: '1.13'
-description: 'a simple plugin'
+description: 'A modular Minecraft plugin with various small features'
 authors: [postyizhan]
+website: 'https://github.com/postyizhan/PostBits'
+
+commands:
+  postbits:
+    description: 'PostBits main command'
+    usage: '/postbits [reload|update]'
+    aliases: [pb]
+
+permissions:
+  postbits.admin:
+    description: 'Access to all PostBits admin commands'
+    default: op
+    children:
+      postbits.admin.reload: true
+      postbits.admin.update: true
+  postbits.admin.reload:
+    description: 'Permission to reload the plugin'
+    default: op
+  postbits.admin.update:
+    description: 'Permission to check for updates'
+    default: op

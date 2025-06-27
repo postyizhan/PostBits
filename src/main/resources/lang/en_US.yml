@@ -1,0 +1,32 @@
+prefix: "&8[&3Post&bBits&8] "
+
+# ===========================================
+# Basic Messages
+# ===========================================
+messages:
+  enabled: "{prefix}&aPlugin enabled"
+  disabled: "{prefix}&cPlugin disabled"
+  reload: "{prefix}&aPlugin reloaded successfully!"
+  reload_failed: "{prefix}&cPlugin reload failed, check console for errors"
+  no_permission: "{prefix}&cYou don't have permission to execute this command"
+  unknown_command: "{prefix}&cUnknown command, use &e/postbits &cfor help"
+  module_disabled: "{prefix}&cThis module is disabled"
+
+# ===========================================
+# Command Help Information
+# ===========================================
+commands:
+  help:
+    header: "{prefix}&e=== PostBits Help ==="
+    reload: "&e/postbits reload &7- &fReload plugin configuration"
+    update: "&e/postbits update &7- &fCheck for plugin updates"
+
+# ===========================================
+# Update Checker System Messages
+# ===========================================
+system:
+  updater:
+    update_available: "{prefix}&eNew version available: &a{latest_version}&e, current version: &c{current_version}"
+    update_url: "{prefix}&eDownload: &bhttps://github.com/postyizhan/PostBits/releases/latest"
+    up_to_date: "{prefix}&aPlugin is up to date &e{current_version}"
+    check_failed: "{prefix}&cUpdate check failed, please try again later"

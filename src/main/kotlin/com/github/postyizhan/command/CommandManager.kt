@@ -1,0 +1,146 @@
+package com.github.postyizhan.command
+
+import com.github.postyizhan.PostBits
+import com.github.postyizhan.util.MessageUtil
+import org.bukkit.command.Command
+import org.bukkit.command.CommandExecutor
+import org.bukkit.command.CommandSender
+import org.bukkit.command.TabCompleter
+
+/**
+ * 命令管理器 - 负责处理所有插件命令
+ * 
+ * @author postyizhan
+ */
+class CommandManager(private val plugin: PostBits) : CommandExecutor, TabCompleter {
+
+    /**
+     * 处理命令执行
+     */
+    override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
+        when (command.name.lowercase()) {
+            "postbits" -> {
+                return handleMainCommand(sender, args)
+            }
+        }
+        return false
+    }
+
+    /**
+     * 处理主命令
+     */
+    private fun handleMainCommand(sender: CommandSender, args: Array<out String>): Boolean {
+        if (args.isEmpty()) {
+            // 显示帮助信息
+            showHelp(sender)
+            return true
+        }
+
+        when (args[0].lowercase()) {
+            "reload" -> {
+                return handleReloadCommand(sender)
+            }
+            "update" -> {
+                return handleUpdateCommand(sender)
+            }
+            "help" -> {
+                showHelp(sender)
+                return true
+            }
+            else -> {
+                MessageUtil.sendMessage(sender, "messages.unknown_command")
+                return true
+            }
+        }
+    }
+
+    /**
+     * 处理重载命令
+     */
+    private fun handleReloadCommand(sender: CommandSender): Boolean {
+        if (!sender.hasPermission("postbits.admin.reload")) {
+            MessageUtil.sendMessage(sender, "messages.no_permission")
+            return true
+        }
+
+        try {
+            plugin.reload()
+            MessageUtil.sendMessage(sender, "messages.reload")
+            if (plugin.isDebugEnabled()) {
+                plugin.logger.info("Debug: Plugin reloaded by ${sender.name}")
+            }
+        } catch (e: Exception) {
+            MessageUtil.sendMessage(sender, "messages.reload_failed")
+            plugin.logger.severe("Failed to reload plugin: ${e.message}")
+            if (plugin.isDebugEnabled()) {
+                e.printStackTrace()
+            }
+        }
+        return true
+    }
+
+    /**
+     * 处理更新检查命令
+     */
+    private fun handleUpdateCommand(sender: CommandSender): Boolean {
+        if (!plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
+            MessageUtil.sendMessage(sender, "messages.module_disabled")
+            return true
+        }
+
+        if (!sender.hasPermission("postbits.admin.update")) {
+            MessageUtil.sendMessage(sender, "messages.no_permission")
+            return true
+        }
+
+        plugin.sendUpdateInfo(sender)
+        if (plugin.isDebugEnabled()) {
+            plugin.logger.info("Debug: Update check requested by ${sender.name}")
+        }
+        return true
+    }
+
+    /**
+     * 显示帮助信息
+     */
+    private fun showHelp(sender: CommandSender) {
+        MessageUtil.sendMessage(sender, "commands.help.header")
+        MessageUtil.sendMessage(sender, "commands.help.reload")
+        
+        // 只有在更新检查模块启用时才显示更新命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.update")
+        }
+    }
+
+    /**
+     * 处理命令补全
+     */
+    override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {
+        if (command.name.lowercase() != "postbits") {
+            return null
+        }
+
+        if (args.size == 1) {
+            val completions = mutableListOf<String>()
+            
+            // 基础命令
+            if (sender.hasPermission("postbits.admin.reload")) {
+                completions.add("reload")
+            }
+            
+            // 更新检查命令（仅在模块启用时显示）
+            if (sender.hasPermission("postbits.admin.update") && 
+                plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
+                completions.add("update")
+            }
+            
+            completions.add("help")
+            
+            // 过滤匹配的命令
+            return completions.filter { it.startsWith(args[0].lowercase()) }
+        }
+
+        return emptyList()
+    }
+}
