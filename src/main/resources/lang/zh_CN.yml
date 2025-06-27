@@ -1,0 +1,5 @@
+prefix: "&8[&3Post&bBits&8] "
+messages:
+  enabled: "{prefix}&7插件已启用"
+  disabled: "{prefix}&7插件已卸载"
+  reload: "{prefix}&7插件重载成功！"

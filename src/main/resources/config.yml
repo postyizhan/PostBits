@@ -1,0 +1,15 @@
+# PostBits 主配置文件
+# 作者: postyizhan
+
+# 更新检查设置
+update-checker:
+  # 是否启用更新检查
+  enabled: true
+  # 检查频率（天）
+  check-interval-days: 1
+
+# 语言 支持的语言：https://github.com/postyizhan/PostBits/tree/main/src/main/resources/lang
+language: zh_CN
+
+# 调试模式
+debug: false
