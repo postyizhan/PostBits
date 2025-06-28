@@ -25,3 +25,15 @@ permissions:
   postbits.admin.update:
     description: 'Permission to check for updates'
     default: op
+  postbits.chair:
+    description: 'Access to all chair functions'
+    default: op
+    children:
+      postbits.chair.sit: true
+      postbits.chair.info: true
+  postbits.chair.sit:
+    description: 'Permission to sit on blocks'
+    default: op
+  postbits.chair.info:
+    description: 'Permission to view seat information'
+    default: op

@@ -21,3 +21,43 @@ modules:
     enabled: true
     # 检查频率（天）
     check-interval-days: 1
+
+  # 椅子模块
+  chair:
+    enabled: false  # 默认关闭
+    # 可以坐下的方块类型（小写）
+    sittable-blocks:
+      - "oak_stairs"
+      - "birch_stairs"
+      - "spruce_stairs"
+      - "jungle_stairs"
+      - "acacia_stairs"
+      - "dark_oak_stairs"
+      - "stone_stairs"
+      - "brick_stairs"
+      - "stone_brick_stairs"
+      - "nether_brick_stairs"
+      - "sandstone_stairs"
+      - "quartz_stairs"
+      - "oak_slab"
+      - "birch_slab"
+      - "spruce_slab"
+      - "jungle_slab"
+      - "acacia_slab"
+      - "dark_oak_slab"
+      - "stone_slab"
+      - "stone_brick_slab"
+    # 是否需要空手才能坐下
+    empty-hand-only: true
+    # 最大坐下距离（0为无限制）
+    max-distance: 3.0
+    # 是否允许在不安全的位置坐下
+    allow-unsafe: false
+    # 是否允许多个玩家坐在同一方块
+    allow-multiple-players: false
+    # 是否允许潜行起身
+    sneak-to-stand: true
+    # 受伤时是否自动起身
+    stand-on-damage: true
+    # 起身时是否返回原位置
+    return-to-original: false

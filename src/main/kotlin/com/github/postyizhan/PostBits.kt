@@ -1,10 +1,13 @@
 package com.github.postyizhan
 
+import com.github.postyizhan.chair.ChairEventHandler
+import com.github.postyizhan.chair.ChairService
 import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
 import org.bukkit.command.CommandSender
+
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -17,6 +20,8 @@ class PostBits : JavaPlugin() {
     private lateinit var configManager: ConfigManager
     private lateinit var commandManager: CommandManager
     private lateinit var updateChecker: UpdateChecker
+    private lateinit var chairService: ChairService
+    private lateinit var chairEventHandler: ChairEventHandler
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -50,6 +55,18 @@ class PostBits : JavaPlugin() {
         commandManager = CommandManager(this)
         getCommand("postbits")?.setExecutor(commandManager)
         getCommand("postbits")?.tabCompleter = commandManager
+
+
+
+        // 初始化椅子服务
+        if (configManager.getConfig().getBoolean("modules.chair.enabled", false)) {
+            chairService = ChairService(this)
+            chairEventHandler = ChairEventHandler(this, chairService)
+            server.pluginManager.registerEvents(chairEventHandler, this)
+            if (debugEnabled) {
+                logger.info("Debug: Chair module enabled")
+            }
+        }
 
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
@@ -86,6 +103,11 @@ class PostBits : JavaPlugin() {
      * 插件禁用时触发
      */
     override fun onDisable() {
+        // 清理椅子服务
+        if (this::chairService.isInitialized) {
+            chairService.cleanup()
+        }
+
         // 输出禁用消息
         server.consoleSender.sendMessage(MessageUtil.color(MessageUtil.getMessage("messages.disabled")))
         if (debugEnabled) {
@@ -108,6 +130,18 @@ class PostBits : JavaPlugin() {
             if (!this::updateChecker.isInitialized) {
                 updateChecker = UpdateChecker(this, "postyizhan/PostBits")
             }
+        }
+
+        // 重新初始化椅子服务
+        if (configManager.getConfig().getBoolean("modules.chair.enabled", false)) {
+            if (!this::chairService.isInitialized) {
+                chairService = ChairService(this)
+                chairEventHandler = ChairEventHandler(this, chairService)
+                server.pluginManager.registerEvents(chairEventHandler, this)
+            }
+        } else if (this::chairService.isInitialized) {
+            // 如果椅子模块被禁用，清理现有座位
+            chairService.cleanup()
         }
 
         if (debugEnabled) {
@@ -157,4 +191,13 @@ class PostBits : JavaPlugin() {
     fun isDebugEnabled(): Boolean {
         return debugEnabled
     }
+
+    /**
+     * 获取椅子服务
+     */
+    fun getChairService(): ChairService? {
+        return if (this::chairService.isInitialized) chairService else null
+    }
+
+
 }

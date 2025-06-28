@@ -9,6 +9,7 @@ messages:
   no_permission: "{prefix}&c你没有权限执行此命令"
   unknown_command: "{prefix}&c未知命令，使用 &e/postbits &c查看帮助"
   module_disabled: "{prefix}&c此模块已被禁用"
+  player_only: "{prefix}&c此命令只能由玩家执行"
 
 # 命令帮助信息
 commands:
@@ -16,6 +17,7 @@ commands:
     header: "{prefix}&e=== PostBits 帮助 ==="
     reload: "&e/postbits reload &7- &f重载插件配置"
     update: "&e/postbits update &7- &f检查插件更新"
+    chair: "&e/postbits chair [sit|stand|info] &7- &f椅子功能"
 
 # 更新检查消息
 system:
@@ -24,3 +26,19 @@ system:
     update_available: "{prefix}&e发现新版本！当前版本：&c{current_version}&e，最新版本：&a{latest_version}"
     update_url: "{prefix}&e请访问：&bhttps://github.com/postyizhan/PostBits/releases/latest &e获取最新版本"
     up_to_date: "{prefix}&7您使用的是最新版本！"
+
+# 椅子功能消息
+chair:
+  sit_success: "{prefix}&7你已坐下"
+  stand_success: "{prefix}&7你已起身"
+  already_sitting: "{prefix}&7你已经在坐着了"
+  not_sitting: "{prefix}&7你没有在坐着"
+  already_occupied: "{prefix}&7这个位置已经被占用了"
+  too_far: "{prefix}&7距离太远，无法坐下"
+  unsafe_location: "{prefix}&7这个位置不安全，无法坐下"
+  not_sittable: "{prefix}&7这个方块无法坐下"
+  invalid_state: "{prefix}&7当前状态无法坐下"
+  sit_failed: "{prefix}&7坐下失败"
+  stand_failed: "{prefix}&7起身失败"
+  unknown_subcommand: "{prefix}&7未知的椅子子命令"
+  info_header: "{prefix}&e=== 座位信息 ==="

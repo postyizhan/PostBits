@@ -1,6 +1,7 @@
 package com.github.postyizhan.command
 
 import com.github.postyizhan.PostBits
+import com.github.postyizhan.chair.ChairCommand
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -13,6 +14,10 @@ import org.bukkit.command.TabCompleter
  * @author postyizhan
  */
 class CommandManager(private val plugin: PostBits) : CommandExecutor, TabCompleter {
+
+    private val chairCommand: ChairCommand? by lazy {
+        plugin.getChairService()?.let { ChairCommand(plugin, it) }
+    }
 
     /**
      * 处理命令执行
@@ -42,6 +47,10 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             }
             "update" -> {
                 return handleUpdateCommand(sender)
+            }
+
+            "chair" -> {
+                return handleChairCommand(sender, args.drop(1).toTypedArray())
             }
             "help" -> {
                 showHelp(sender)
@@ -101,6 +110,20 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
     }
 
     /**
+     * 处理椅子命令
+     */
+    private fun handleChairCommand(sender: CommandSender, args: Array<out String>): Boolean {
+        val chairCmd = chairCommand
+        if (chairCmd == null) {
+            MessageUtil.sendMessage(sender, "messages.module_disabled")
+            return true
+        }
+        return chairCmd.handleChairCommand(sender, args)
+    }
+
+
+
+    /**
      * 显示帮助信息
      */
     private fun showHelp(sender: CommandSender) {
@@ -111,6 +134,13 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         if (plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
             MessageUtil.sendMessage(sender, "commands.help.update")
         }
+
+        // 只有在椅子模块启用时才显示椅子命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.chair.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.chair")
+        }
+
+
     }
 
     /**
@@ -130,11 +160,17 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             }
             
             // 更新检查命令（仅在模块启用时显示）
-            if (sender.hasPermission("postbits.admin.update") && 
+            if (sender.hasPermission("postbits.admin.update") &&
                 plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
                 completions.add("update")
             }
-            
+
+            // 椅子命令（仅在模块启用时显示）
+            if (sender.hasPermission("postbits.chair.sit") &&
+                plugin.getConfigManager().getConfig().getBoolean("modules.chair.enabled", false)) {
+                completions.add("chair")
+            }
+
             completions.add("help")
             
             // 过滤匹配的命令
