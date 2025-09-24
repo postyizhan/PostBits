@@ -37,3 +37,11 @@ permissions:
   postbits.chair.info:
     description: 'Permission to view seat information'
     default: op
+  postbits.invedit:
+    description: 'Access to all inventory edit functions'
+    default: op
+    children:
+      postbits.invedit.use: true
+  postbits.invedit.use:
+    description: 'Permission to edit player inventories'
+    default: op

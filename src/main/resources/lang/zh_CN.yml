@@ -18,6 +18,7 @@ commands:
     reload: "&e/postbits reload &7- &f重载插件配置"
     update: "&e/postbits update &7- &f检查插件更新"
     chair: "&e/postbits chair [sit|stand|info] &7- &f椅子功能"
+    invedit: "&e/postbits invedit <玩家名> &7- &f背包编辑功能"
 
 # 更新检查消息
 system:
@@ -42,3 +43,15 @@ chair:
   stand_failed: "{prefix}&7起身失败"
   unknown_subcommand: "{prefix}&7未知的椅子子命令"
   info_header: "{prefix}&e=== 座位信息 ==="
+
+# 背包编辑功能消息
+invedit:
+  gui_title: "&6编辑 {player} 的背包"
+  opened_inventory: "{prefix}&a已打开 &e{player} &a的背包编辑界面"
+  changes_saved: "{prefix}&a已保存对 &e{player} &a背包的更改"
+  changes_cancelled: "{prefix}&c已取消对背包的编辑"
+  save_failed: "{prefix}&c保存背包更改失败"
+  target_offline: "{prefix}&c目标玩家已下线"
+  target_not_found: "{prefix}&c找不到目标玩家"
+  cannot_edit_self: "{prefix}&c你不能编辑自己的背包"
+  invalid_usage: "{prefix}&c用法: /postbits invedit <玩家名>"

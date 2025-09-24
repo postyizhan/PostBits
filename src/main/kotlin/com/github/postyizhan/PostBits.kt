@@ -4,6 +4,8 @@ import com.github.postyizhan.chair.ChairEventHandler
 import com.github.postyizhan.chair.ChairService
 import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
+import com.github.postyizhan.invedit.InvEditEventHandler
+import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
 import org.bukkit.command.CommandSender
@@ -22,6 +24,8 @@ class PostBits : JavaPlugin() {
     private lateinit var updateChecker: UpdateChecker
     private lateinit var chairService: ChairService
     private lateinit var chairEventHandler: ChairEventHandler
+    private lateinit var invEditService: InvEditService
+    private lateinit var invEditEventHandler: InvEditEventHandler
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -68,6 +72,16 @@ class PostBits : JavaPlugin() {
             }
         }
 
+        // 初始化背包编辑服务
+        if (configManager.getConfig().getBoolean("modules.invedit.enabled", false)) {
+            invEditService = InvEditService(this)
+            invEditEventHandler = InvEditEventHandler(this, invEditService)
+            server.pluginManager.registerEvents(invEditEventHandler, this)
+            if (debugEnabled) {
+                logger.info("Debug: InvEdit module enabled")
+            }
+        }
+
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
             updateChecker = UpdateChecker(this, "postyizhan/PostBits")
@@ -108,6 +122,11 @@ class PostBits : JavaPlugin() {
             chairService.cleanup()
         }
 
+        // 清理背包编辑服务
+        if (this::invEditService.isInitialized) {
+            invEditService.cleanup()
+        }
+
         // 输出禁用消息
         server.consoleSender.sendMessage(MessageUtil.color(MessageUtil.getMessage("messages.disabled")))
         if (debugEnabled) {
@@ -142,6 +161,18 @@ class PostBits : JavaPlugin() {
         } else if (this::chairService.isInitialized) {
             // 如果椅子模块被禁用，清理现有座位
             chairService.cleanup()
+        }
+
+        // 重新初始化背包编辑服务
+        if (configManager.getConfig().getBoolean("modules.invedit.enabled", false)) {
+            if (!this::invEditService.isInitialized) {
+                invEditService = InvEditService(this)
+                invEditEventHandler = InvEditEventHandler(this, invEditService)
+                server.pluginManager.registerEvents(invEditEventHandler, this)
+            }
+        } else if (this::invEditService.isInitialized) {
+            // 如果背包编辑模块被禁用，清理现有会话
+            invEditService.cleanup()
         }
 
         if (debugEnabled) {
@@ -197,6 +228,13 @@ class PostBits : JavaPlugin() {
      */
     fun getChairService(): ChairService? {
         return if (this::chairService.isInitialized) chairService else null
+    }
+
+    /**
+     * 获取背包编辑服务
+     */
+    fun getInvEditService(): InvEditService? {
+        return if (this::invEditService.isInitialized) invEditService else null
     }
 
 

@@ -80,10 +80,32 @@ object MessageUtil {
     }
 
     /**
+     * 发送消息给命令发送者（带占位符替换）
+     */
+    fun sendMessage(sender: CommandSender, key: String, vararg placeholders: Pair<String, String>) {
+        var message = getMessage(key)
+        for ((placeholder, replacement) in placeholders) {
+            message = message.replace(placeholder, replacement)
+        }
+        sender.sendMessage(color(message))
+    }
+
+    /**
      * 发送消息给玩家
      */
     fun sendMessage(player: Player, key: String) {
         val message = getMessage(key)
+        player.sendMessage(color(message))
+    }
+
+    /**
+     * 发送消息给玩家（带占位符替换）
+     */
+    fun sendMessage(player: Player, key: String, vararg placeholders: Pair<String, String>) {
+        var message = getMessage(key)
+        for ((placeholder, replacement) in placeholders) {
+            message = message.replace(placeholder, replacement)
+        }
         player.sendMessage(color(message))
     }
 

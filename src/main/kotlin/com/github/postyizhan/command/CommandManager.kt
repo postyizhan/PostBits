@@ -2,6 +2,7 @@ package com.github.postyizhan.command
 
 import com.github.postyizhan.PostBits
 import com.github.postyizhan.chair.ChairCommand
+import com.github.postyizhan.invedit.InvEditCommand
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -17,6 +18,10 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
 
     private val chairCommand: ChairCommand? by lazy {
         plugin.getChairService()?.let { ChairCommand(plugin, it) }
+    }
+
+    private val invEditCommand: InvEditCommand? by lazy {
+        plugin.getInvEditService()?.let { InvEditCommand(plugin, it) }
     }
 
     /**
@@ -51,6 +56,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
 
             "chair" -> {
                 return handleChairCommand(sender, args.drop(1).toTypedArray())
+            }
+            "invedit" -> {
+                return handleInvEditCommand(sender, args.drop(1).toTypedArray())
             }
             "help" -> {
                 showHelp(sender)
@@ -121,6 +129,18 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         return chairCmd.handleChairCommand(sender, args)
     }
 
+    /**
+     * 处理背包编辑命令
+     */
+    private fun handleInvEditCommand(sender: CommandSender, args: Array<out String>): Boolean {
+        val invEditCmd = invEditCommand
+        if (invEditCmd == null) {
+            MessageUtil.sendMessage(sender, "messages.module_disabled")
+            return true
+        }
+        return invEditCmd.execute(sender, arrayOf(*args))
+    }
+
 
 
     /**
@@ -138,6 +158,11 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         // 只有在椅子模块启用时才显示椅子命令
         if (plugin.getConfigManager().getConfig().getBoolean("modules.chair.enabled", false)) {
             MessageUtil.sendMessage(sender, "commands.help.chair")
+        }
+
+        // 只有在背包编辑模块启用时才显示背包编辑命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.invedit.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.invedit")
         }
 
 
@@ -171,10 +196,28 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 completions.add("chair")
             }
 
+            // 背包编辑命令（仅在模块启用时显示）
+            if (sender.hasPermission("postbits.invedit.use") &&
+                plugin.getConfigManager().getConfig().getBoolean("modules.invedit.enabled", false)) {
+                completions.add("invedit")
+            }
+
             completions.add("help")
             
             // 过滤匹配的命令
             return completions.filter { it.startsWith(args[0].lowercase()) }
+        }
+
+        // 处理二级命令补全
+        if (args.size == 2) {
+            when (args[0].lowercase()) {
+                "invedit" -> {
+                    val invEditCmd = invEditCommand
+                    if (invEditCmd != null && sender.hasPermission("postbits.invedit.use")) {
+                        return invEditCmd.onTabComplete(sender, args.drop(1).toTypedArray())
+                    }
+                }
+            }
         }
 
         return emptyList()

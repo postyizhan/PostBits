@@ -61,3 +61,7 @@ modules:
     stand-on-damage: true
     # 起身时是否返回原位置
     return-to-original: false
+
+  # 背包编辑模块
+  invedit:
+    enabled: false  # 默认关闭

@@ -26,6 +26,13 @@
 - 安全检查和距离限制
 - 自动调整坐下高度，避免浮空
 
+### 背包编辑模块
+- 管理员编辑玩家背包功能
+- 图形化界面编辑背包、装备、副手
+- 权限控制和免疫系统
+- 实时保存和取消功能
+- 安全检查和通知系统
+
 ## 安装
 
 1. 下载最新的 JAR 文件
@@ -56,6 +63,9 @@ modules:
     sneak-to-stand: true  # 潜行起身
     stand-on-damage: true  # 受伤起身
 
+  invedit:
+    enabled: false  # 设置为 true 启用背包编辑功能
+
 # 语言设置
 language: zh_CN  # 支持 zh_CN, en_US
 
@@ -69,6 +79,7 @@ debug: false
 - `/postbits reload` - 重载插件配置
 - `/postbits update` - 检查插件更新（需要启用更新检查模块）
 - `/postbits chair [sit|stand|info]` - 椅子功能（需要启用椅子模块）
+- `/postbits invedit <玩家名>` - 背包编辑功能（需要启用背包编辑模块）
 
 ## 权限
 
@@ -77,6 +88,7 @@ debug: false
 - `postbits.admin.update` - 更新检查权限
 - `postbits.chair.sit` - 椅子坐下权限
 - `postbits.chair.info` - 椅子信息查看权限
+- `postbits.invedit.use` - 背包编辑使用权限
 
 ## 椅子功能使用方法
 
@@ -102,6 +114,32 @@ sittable-blocks:
 - `max-distance: 3.0` - 限制坐下的最大距离
 - `empty-hand-only: true` - 要求空手才能坐下
 
+## 背包编辑功能使用方法
+
+### 基本使用
+1. 启用背包编辑模块：在配置文件中设置 `modules.invedit.enabled: true`
+2. 重载插件：`/postbits reload`
+3. 使用命令 `/postbits invedit <玩家名>` 打开玩家背包编辑界面
+4. 在GUI界面中直接编辑物品，点击绿色方块保存更改
+
+### 可用命令
+- `/postbits invedit <玩家名>` - 编辑指定玩家的背包
+
+### GUI界面说明
+- 槽位 0-35：背包物品
+- 槽位 36-39：盔甲（靴子/护腿/胸甲/头盔）
+- 槽位 40：副手物品
+- 绿色方块：保存更改
+- 红色方块：取消编辑
+
+### 权限设置
+- `postbits.invedit.use` - 允许编辑玩家背包
+
+### 功能特点
+- 不能编辑自己的背包（安全限制）
+- 不会通知目标玩家被编辑（静默操作）
+- 任何在线玩家的背包都可以被编辑（无免疫机制）
+
 ## 开发
 
 ### 构建
@@ -121,6 +159,10 @@ src/main/
 │   │   ├── ChairEventHandler.kt # 事件处理
 │   │   ├── ChairCommand.kt      # 命令处理
 │   │   └── ChairSeat.kt         # 座位数据
+│   ├── invedit/                 # 背包编辑模块
+│   │   ├── InvEditService.kt    # 背包编辑服务
+│   │   ├── InvEditEventHandler.kt # 事件处理
+│   │   └── InvEditCommand.kt    # 命令处理
 │   ├── command/
 │   │   └── CommandManager.kt    # 命令管理器
 │   ├── config/
