@@ -65,3 +65,37 @@ modules:
   # 背包编辑模块
   invedit:
     enabled: false  # 默认关闭
+
+  # 电梯模块
+  elevator:
+    enabled: false  # 默认关闭
+    # 搜索设置
+    max-search-height: 50  # 向上搜索的最大高度
+    max-search-depth: 50   # 向下搜索的最大深度
+    min-floor-distance: 2  # 楼层之间的最小距离
+    # 冷却时间（毫秒）
+    cooldown-time: 500
+    # 电梯方块类型
+    elevator-blocks:
+      - "IRON_BLOCK"
+      - "GOLD_BLOCK"
+      - "DIAMOND_BLOCK"
+      - "EMERALD_BLOCK"
+      - "QUARTZ_BLOCK"
+      - "LAPIS_BLOCK"
+      - "REDSTONE_BLOCK"
+      - "COAL_BLOCK"
+      - "COPPER_BLOCK"
+      - "NETHERITE_BLOCK"
+    # 音效设置
+    sound-enabled: true
+    up-sound: "ENTITY_ENDERMAN_TELEPORT"
+    down-sound: "ENTITY_ENDERMAN_TELEPORT"
+    sound-volume: 0.5
+    sound-pitch: 1.0
+    # 粒子效果设置
+    particle-enabled: true
+    particle-type: "PORTAL"
+    particle-count: 10
+    # 消息设置
+    message-enabled: true

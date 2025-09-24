@@ -55,3 +55,10 @@ invedit:
   target_not_found: "{prefix}&c找不到目标玩家"
   cannot_edit_self: "{prefix}&c你不能编辑自己的背包"
   invalid_usage: "{prefix}&c用法: /postbits invedit <玩家名>"
+
+# 电梯功能消息
+elevator:
+  elevator_up: "{prefix}&a电梯上升！"
+  elevator_down: "{prefix}&a电梯下降！"
+  no_floor_above: "{prefix}&c上方没有找到电梯楼层"
+  no_floor_below: "{prefix}&c下方没有找到电梯楼层"

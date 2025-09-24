@@ -4,6 +4,8 @@ import com.github.postyizhan.chair.ChairEventHandler
 import com.github.postyizhan.chair.ChairService
 import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
+import com.github.postyizhan.elevator.ElevatorEventHandler
+import com.github.postyizhan.elevator.ElevatorService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.util.MessageUtil
@@ -26,6 +28,8 @@ class PostBits : JavaPlugin() {
     private lateinit var chairEventHandler: ChairEventHandler
     private lateinit var invEditService: InvEditService
     private lateinit var invEditEventHandler: InvEditEventHandler
+    private lateinit var elevatorService: ElevatorService
+    private lateinit var elevatorEventHandler: ElevatorEventHandler
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -82,6 +86,16 @@ class PostBits : JavaPlugin() {
             }
         }
 
+        // 初始化电梯服务
+        if (configManager.getConfig().getBoolean("modules.elevator.enabled", false)) {
+            elevatorService = ElevatorService(this)
+            elevatorEventHandler = ElevatorEventHandler(this, elevatorService)
+            server.pluginManager.registerEvents(elevatorEventHandler, this)
+            if (debugEnabled) {
+                logger.info("Debug: Elevator module enabled")
+            }
+        }
+
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
             updateChecker = UpdateChecker(this, "postyizhan/PostBits")
@@ -125,6 +139,11 @@ class PostBits : JavaPlugin() {
         // 清理背包编辑服务
         if (this::invEditService.isInitialized) {
             invEditService.cleanup()
+        }
+
+        // 清理电梯服务
+        if (this::elevatorService.isInitialized) {
+            elevatorService.cleanup()
         }
 
         // 输出禁用消息
@@ -173,6 +192,18 @@ class PostBits : JavaPlugin() {
         } else if (this::invEditService.isInitialized) {
             // 如果背包编辑模块被禁用，清理现有会话
             invEditService.cleanup()
+        }
+
+        // 重新初始化电梯服务
+        if (configManager.getConfig().getBoolean("modules.elevator.enabled", false)) {
+            if (!this::elevatorService.isInitialized) {
+                elevatorService = ElevatorService(this)
+                elevatorEventHandler = ElevatorEventHandler(this, elevatorService)
+                server.pluginManager.registerEvents(elevatorEventHandler, this)
+            }
+        } else if (this::elevatorService.isInitialized) {
+            // 如果电梯模块被禁用，清理现有数据
+            elevatorService.cleanup()
         }
 
         if (debugEnabled) {
@@ -235,6 +266,13 @@ class PostBits : JavaPlugin() {
      */
     fun getInvEditService(): InvEditService? {
         return if (this::invEditService.isInitialized) invEditService else null
+    }
+
+    /**
+     * 获取电梯服务
+     */
+    fun getElevatorService(): ElevatorService? {
+        return if (this::elevatorService.isInitialized) elevatorService else null
     }
 
 

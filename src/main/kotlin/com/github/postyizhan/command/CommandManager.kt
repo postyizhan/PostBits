@@ -24,6 +24,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         plugin.getInvEditService()?.let { InvEditCommand(plugin, it) }
     }
 
+
     /**
      * 处理命令执行
      */
@@ -143,6 +144,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
 
 
 
+
     /**
      * 显示帮助信息
      */
@@ -164,6 +166,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         if (plugin.getConfigManager().getConfig().getBoolean("modules.invedit.enabled", false)) {
             MessageUtil.sendMessage(sender, "commands.help.invedit")
         }
+
 
 
     }
@@ -201,6 +204,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 plugin.getConfigManager().getConfig().getBoolean("modules.invedit.enabled", false)) {
                 completions.add("invedit")
             }
+
 
             completions.add("help")
             

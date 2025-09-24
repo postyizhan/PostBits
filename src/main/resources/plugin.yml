@@ -45,3 +45,11 @@ permissions:
   postbits.invedit.use:
     description: 'Permission to edit player inventories'
     default: op
+  postbits.elevator:
+    description: 'Access to all elevator functions'
+    default: op
+    children:
+      postbits.elevator.use: true
+  postbits.elevator.use:
+    description: 'Permission to use elevators'
+    default: op

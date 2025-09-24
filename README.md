@@ -33,6 +33,14 @@
 - 实时保存和取消功能
 - 安全检查和通知系统
 
+### 电梯模块
+- 站在电梯方块上跳跃或蹲下进行楼层传送
+- 支持多种电梯方块类型配置
+- 自动寻找上下楼层，智能空间检测
+- 音效、粒子效果和消息提示
+- 冷却时间防止频繁使用
+- **纯事件驱动，无需任何命令**
+
 ## 安装
 
 1. 下载最新的 JAR 文件
@@ -66,6 +74,21 @@ modules:
   invedit:
     enabled: false  # 设置为 true 启用背包编辑功能
 
+  elevator:
+    enabled: false  # 设置为 true 启用电梯功能
+    max-search-height: 50  # 向上搜索的最大高度
+    max-search-depth: 50   # 向下搜索的最大深度
+    min-floor-distance: 2  # 楼层之间的最小距离
+    cooldown-time: 500     # 冷却时间（毫秒）
+    elevator-blocks:       # 电梯方块类型
+      - "IRON_BLOCK"
+      - "GOLD_BLOCK"
+      - "DIAMOND_BLOCK"
+      # ... 更多方块类型
+    sound-enabled: true    # 音效开关
+    particle-enabled: true # 粒子效果开关
+    message-enabled: true  # 消息提示开关
+
 # 语言设置
 language: zh_CN  # 支持 zh_CN, en_US
 
@@ -89,6 +112,7 @@ debug: false
 - `postbits.chair.sit` - 椅子坐下权限
 - `postbits.chair.info` - 椅子信息查看权限
 - `postbits.invedit.use` - 背包编辑使用权限
+- `postbits.elevator.use` - 电梯使用权限
 
 ## 椅子功能使用方法
 
@@ -140,6 +164,47 @@ sittable-blocks:
 - 不会通知目标玩家被编辑（静默操作）
 - 任何在线玩家的背包都可以被编辑（无免疫机制）
 
+## 电梯功能使用方法
+
+### 基本使用
+1. 启用电梯模块：在配置文件中设置 `modules.elevator.enabled: true`
+2. 重载插件：`/postbits reload`
+3. 在同一水平位置的不同高度放置电梯方块
+4. 站在电梯方块上**跳跃** → 传送到上方楼层
+5. 站在电梯方块上**蹲下** → 传送到下方楼层
+
+### 电梯方块配置
+默认支持的电梯方块类型：
+- 铁块 (IRON_BLOCK)
+- 金块 (GOLD_BLOCK)  
+- 钻石块 (DIAMOND_BLOCK)
+- 绿宝石块 (EMERALD_BLOCK)
+- 石英块 (QUARTZ_BLOCK)
+- 青金石块 (LAPIS_BLOCK)
+- 红石块 (REDSTONE_BLOCK)
+- 煤炭块 (COAL_BLOCK)
+- 铜块 (COPPER_BLOCK)
+- 下界合金块 (NETHERITE_BLOCK)
+
+### 配置选项说明
+- `max-search-height: 50` - 向上搜索电梯的最大高度
+- `max-search-depth: 50` - 向下搜索电梯的最大深度
+- `min-floor-distance: 2` - 楼层之间的最小距离
+- `cooldown-time: 500` - 使用冷却时间（毫秒）
+- `sound-enabled: true` - 是否播放传送音效
+- `particle-enabled: true` - 是否显示粒子效果
+- `message-enabled: true` - 是否显示传送消息
+
+### 权限设置
+- `postbits.elevator.use` - 允许使用电梯功能
+
+### 使用注意事项
+- 电梯方块必须在同一水平位置（相同的X、Z坐标）
+- 楼层之间需要保持最小距离（默认2格）
+- 目标位置必须有足够的空间容纳玩家（2格高度）
+- 存在冷却时间防止频繁使用
+- **完全通过跳跃和蹲下操作，无需输入任何命令**
+
 ## 开发
 
 ### 构建
@@ -163,6 +228,9 @@ src/main/
 │   │   ├── InvEditService.kt    # 背包编辑服务
 │   │   ├── InvEditEventHandler.kt # 事件处理
 │   │   └── InvEditCommand.kt    # 命令处理
+│   ├── elevator/                # 电梯模块
+│   │   ├── ElevatorService.kt   # 电梯服务
+│   │   └── ElevatorEventHandler.kt # 事件处理
 │   ├── command/
 │   │   └── CommandManager.kt    # 命令管理器
 │   ├── config/
