@@ -53,3 +53,6 @@ permissions:
   postbits.elevator.use:
     description: 'Permission to use elevators'
     default: op
+  postbits.head.use:
+    description: 'Permission to use head equipment'
+    default: op

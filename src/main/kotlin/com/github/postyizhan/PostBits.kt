@@ -6,6 +6,7 @@ import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
 import com.github.postyizhan.elevator.ElevatorEventHandler
 import com.github.postyizhan.elevator.ElevatorService
+import com.github.postyizhan.head.HeadService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.util.MessageUtil
@@ -30,6 +31,7 @@ class PostBits : JavaPlugin() {
     private lateinit var invEditEventHandler: InvEditEventHandler
     private lateinit var elevatorService: ElevatorService
     private lateinit var elevatorEventHandler: ElevatorEventHandler
+    private lateinit var headService: HeadService
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -96,6 +98,15 @@ class PostBits : JavaPlugin() {
             }
         }
 
+        // 初始化头部装备服务
+        if (configManager.getConfig().getBoolean("modules.head.enabled", false)) {
+            headService = HeadService(this)
+            headService.initialize()
+            if (debugEnabled) {
+                logger.info("Debug: Head module enabled")
+            }
+        }
+
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
             updateChecker = UpdateChecker(this, "postyizhan/PostBits")
@@ -144,6 +155,11 @@ class PostBits : JavaPlugin() {
         // 清理电梯服务
         if (this::elevatorService.isInitialized) {
             elevatorService.cleanup()
+        }
+
+        // 清理头部装备服务
+        if (this::headService.isInitialized) {
+            headService.cleanup()
         }
 
         // 输出禁用消息
@@ -204,6 +220,17 @@ class PostBits : JavaPlugin() {
         } else if (this::elevatorService.isInitialized) {
             // 如果电梯模块被禁用，清理现有数据
             elevatorService.cleanup()
+        }
+
+        // 重新初始化头部装备服务
+        if (configManager.getConfig().getBoolean("modules.head.enabled", false)) {
+            if (!this::headService.isInitialized) {
+                headService = HeadService(this)
+                headService.initialize()
+            }
+        } else if (this::headService.isInitialized) {
+            // 如果头部装备模块被禁用，清理现有数据
+            headService.cleanup()
         }
 
         if (debugEnabled) {
@@ -273,6 +300,13 @@ class PostBits : JavaPlugin() {
      */
     fun getElevatorService(): ElevatorService? {
         return if (this::elevatorService.isInitialized) elevatorService else null
+    }
+
+    /**
+     * 获取头部装备服务
+     */
+    fun getHeadService(): HeadService? {
+        return if (this::headService.isInitialized) headService else null
     }
 
 

@@ -99,3 +99,7 @@ modules:
     particle-count: 10
     # 消息设置
     message-enabled: true
+
+  # 头部装备模块
+  head:
+    enabled: false  # 默认关闭

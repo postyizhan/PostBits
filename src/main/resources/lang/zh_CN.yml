@@ -19,6 +19,7 @@ commands:
     update: "&e/postbits update &7- &f检查插件更新"
     chair: "&e/postbits chair [sit|stand|info] &7- &f椅子功能"
     invedit: "&e/postbits invedit <玩家名> &7- &f背包编辑功能"
+    head: "&e/postbits head [remove|help] &7- &f头部装备功能"
 
 # 更新检查消息
 system:
@@ -62,3 +63,11 @@ elevator:
   elevator_down: "{prefix}&a电梯下降！"
   no_floor_above: "{prefix}&c上方没有找到电梯楼层"
   no_floor_below: "{prefix}&c下方没有找到电梯楼层"
+
+# 头部装备功能消息
+head:
+  success: "{prefix}&a物品已戴在头上"
+  removed: "{prefix}&a已取下头上的物品"
+  no_item: "{prefix}&c手上没有物品"
+  no_helmet: "{prefix}&c头上没有物品"
+  help: "{prefix}&e用法: /postbits head [remove]"

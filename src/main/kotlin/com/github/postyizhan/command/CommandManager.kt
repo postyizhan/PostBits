@@ -2,6 +2,7 @@ package com.github.postyizhan.command
 
 import com.github.postyizhan.PostBits
 import com.github.postyizhan.chair.ChairCommand
+import com.github.postyizhan.head.HeadCommand
 import com.github.postyizhan.invedit.InvEditCommand
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.command.Command
@@ -22,6 +23,10 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
 
     private val invEditCommand: InvEditCommand? by lazy {
         plugin.getInvEditService()?.let { InvEditCommand(plugin, it) }
+    }
+
+    private val headCommand: HeadCommand? by lazy {
+        plugin.getHeadService()?.let { HeadCommand(plugin, it) }
     }
 
 
@@ -60,6 +65,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             }
             "invedit" -> {
                 return handleInvEditCommand(sender, args.drop(1).toTypedArray())
+            }
+            "head" -> {
+                return handleHeadCommand(sender, args.drop(1).toTypedArray())
             }
             "help" -> {
                 showHelp(sender)
@@ -142,6 +150,18 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         return invEditCmd.execute(sender, arrayOf(*args))
     }
 
+    /**
+     * 处理头部装备命令
+     */
+    private fun handleHeadCommand(sender: CommandSender, args: Array<out String>): Boolean {
+        val headCmd = headCommand
+        if (headCmd == null) {
+            MessageUtil.sendMessage(sender, "messages.module_disabled")
+            return true
+        }
+        return headCmd.execute(sender, arrayOf(*args))
+    }
+
 
 
 
@@ -165,6 +185,11 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         // 只有在背包编辑模块启用时才显示背包编辑命令
         if (plugin.getConfigManager().getConfig().getBoolean("modules.invedit.enabled", false)) {
             MessageUtil.sendMessage(sender, "commands.help.invedit")
+        }
+
+        // 只有在头部装备模块启用时才显示头部装备命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.head.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.head")
         }
 
 
@@ -205,6 +230,12 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 completions.add("invedit")
             }
 
+            // 头部装备命令（仅在模块启用时显示）
+            if (sender.hasPermission("postbits.head.use") &&
+                plugin.getConfigManager().getConfig().getBoolean("modules.head.enabled", false)) {
+                completions.add("head")
+            }
+
 
             completions.add("help")
             
@@ -219,6 +250,12 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                     val invEditCmd = invEditCommand
                     if (invEditCmd != null && sender.hasPermission("postbits.invedit.use")) {
                         return invEditCmd.onTabComplete(sender, args.drop(1).toTypedArray())
+                    }
+                }
+                "head" -> {
+                    val headCmd = headCommand
+                    if (headCmd != null && sender.hasPermission("postbits.head.use")) {
+                        return headCmd.onTabComplete(sender, args.drop(1).toTypedArray())
                     }
                 }
             }

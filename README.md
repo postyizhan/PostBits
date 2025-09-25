@@ -41,6 +41,11 @@
 - 冷却时间防止频繁使用
 - **纯事件驱动，无需任何命令**
 
+### 头部装备模块
+- 将手上的物品戴在头上作为装饰
+- 自动交换手上和头上的物品
+- 简单易用，一个命令搞定
+
 ## 安装
 
 1. 下载最新的 JAR 文件
@@ -87,6 +92,9 @@ modules:
       # ... 更多方块类型
     sound-enabled: true    # 音效开关
     particle-enabled: true # 粒子效果开关
+
+  head:
+    enabled: false  # 设置为 true 启用头部装备功能
     message-enabled: true  # 消息提示开关
 
 # 语言设置
@@ -103,6 +111,7 @@ debug: false
 - `/postbits update` - 检查插件更新（需要启用更新检查模块）
 - `/postbits chair [sit|stand|info]` - 椅子功能（需要启用椅子模块）
 - `/postbits invedit <玩家名>` - 背包编辑功能（需要启用背包编辑模块）
+- `/postbits head [remove]` - 头部装备功能（需要启用头部装备模块）
 
 ## 权限
 
@@ -113,6 +122,7 @@ debug: false
 - `postbits.chair.info` - 椅子信息查看权限
 - `postbits.invedit.use` - 背包编辑使用权限
 - `postbits.elevator.use` - 电梯使用权限
+- `postbits.head.use` - 头部装备使用权限
 
 ## 椅子功能使用方法
 
@@ -205,6 +215,17 @@ sittable-blocks:
 - 存在冷却时间防止频繁使用
 - **完全通过跳跃和蹲下操作，无需输入任何命令**
 
+## 头部装备功能使用方法
+
+### 基本使用
+1. 启用头部装备模块：在配置文件中设置 `modules.head.enabled: true`
+2. 重载插件：`/postbits reload`
+3. 手持物品，输入 `/postbits head` 戴在头上
+4. 输入 `/postbits head remove` 取下
+
+### 权限设置
+- `postbits.head.use` - 允许使用头部装备功能
+
 ## 开发
 
 ### 构建
@@ -231,6 +252,9 @@ src/main/
 │   ├── elevator/                # 电梯模块
 │   │   ├── ElevatorService.kt   # 电梯服务
 │   │   └── ElevatorEventHandler.kt # 事件处理
+│   ├── head/                    # 头部装备模块
+│   │   ├── HeadService.kt       # 头部装备服务
+│   │   └── HeadCommand.kt       # 命令处理
 │   ├── command/
 │   │   └── CommandManager.kt    # 命令管理器
 │   ├── config/
