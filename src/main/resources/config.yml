@@ -103,3 +103,7 @@ modules:
   # 头部装备模块
   head:
     enabled: false  # 默认关闭
+
+  # 随身工具模块
+  portabletools:
+    enabled: false  # 默认关闭

@@ -20,6 +20,7 @@ commands:
     chair: "&e/postbits chair [sit|stand|info] &7- &f椅子功能"
     invedit: "&e/postbits invedit <玩家名> &7- &f背包编辑功能"
     head: "&e/postbits head [remove|help] &7- &f头部装备功能"
+    portabletools: "&e/postbits craft|grindstone|cartography|enchanting|smithing|enderchest &7- &f随身工具功能"
 
 # 更新检查消息
 system:
@@ -71,3 +72,14 @@ head:
   no_item: "{prefix}&c手上没有物品"
   no_helmet: "{prefix}&c头上没有物品"
   help: "{prefix}&e用法: /postbits head [remove]"
+
+# 随身工具功能消息
+portabletools:
+  craft_opened: "{prefix}&a已打开便携工作台"
+  grindstone_opened: "{prefix}&a已打开便携砂轮"
+  cartography_opened: "{prefix}&a已打开便携制图机"
+  enchanting_opened: "{prefix}&a已打开便携附魔台"
+  smithing_opened: "{prefix}&a已打开便携锻造台"
+  enderchest_opened: "{prefix}&a已打开便携末影箱"
+  not_supported: "{prefix}&c该工具在当前服务器版本中不支持，需要1.14+版本"
+  help: "{prefix}&e用法: /postbits <craft|grindstone|cartography|enchanting|smithing|enderchest>"

@@ -9,6 +9,7 @@ import com.github.postyizhan.elevator.ElevatorService
 import com.github.postyizhan.head.HeadService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
+import com.github.postyizhan.portabletools.PortableToolsService
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
 import org.bukkit.command.CommandSender
@@ -32,6 +33,7 @@ class PostBits : JavaPlugin() {
     private lateinit var elevatorService: ElevatorService
     private lateinit var elevatorEventHandler: ElevatorEventHandler
     private lateinit var headService: HeadService
+    private lateinit var portableToolsService: PortableToolsService
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -107,6 +109,15 @@ class PostBits : JavaPlugin() {
             }
         }
 
+        // 初始化随身工具服务
+        if (configManager.getConfig().getBoolean("modules.portabletools.enabled", false)) {
+            portableToolsService = PortableToolsService(this)
+            portableToolsService.initialize()
+            if (debugEnabled) {
+                logger.info("Debug: PortableTools module enabled")
+            }
+        }
+
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
             updateChecker = UpdateChecker(this, "postyizhan/PostBits")
@@ -160,6 +171,11 @@ class PostBits : JavaPlugin() {
         // 清理头部装备服务
         if (this::headService.isInitialized) {
             headService.cleanup()
+        }
+
+        // 清理随身工具服务
+        if (this::portableToolsService.isInitialized) {
+            portableToolsService.cleanup()
         }
 
         // 输出禁用消息
@@ -231,6 +247,17 @@ class PostBits : JavaPlugin() {
         } else if (this::headService.isInitialized) {
             // 如果头部装备模块被禁用，清理现有数据
             headService.cleanup()
+        }
+
+        // 重新初始化随身工具服务
+        if (configManager.getConfig().getBoolean("modules.portabletools.enabled", false)) {
+            if (!this::portableToolsService.isInitialized) {
+                portableToolsService = PortableToolsService(this)
+                portableToolsService.initialize()
+            }
+        } else if (this::portableToolsService.isInitialized) {
+            // 如果随身工具模块被禁用，清理现有数据
+            portableToolsService.cleanup()
         }
 
         if (debugEnabled) {
@@ -307,6 +334,13 @@ class PostBits : JavaPlugin() {
      */
     fun getHeadService(): HeadService? {
         return if (this::headService.isInitialized) headService else null
+    }
+
+    /**
+     * 获取随身工具服务
+     */
+    fun getPortableToolsService(): PortableToolsService? {
+        return if (this::portableToolsService.isInitialized) portableToolsService else null
     }
 
 

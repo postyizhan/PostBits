@@ -56,3 +56,31 @@ permissions:
   postbits.head.use:
     description: 'Permission to use head equipment'
     default: op
+  postbits.portabletools:
+    description: 'Access to all portable tools'
+    default: op
+    children:
+      postbits.portabletools.craft: true
+      postbits.portabletools.grindstone: true
+      postbits.portabletools.cartography: true
+      postbits.portabletools.enchanting: true
+      postbits.portabletools.smithing: true
+      postbits.portabletools.enderchest: true
+  postbits.portabletools.craft:
+    description: 'Permission to use portable craft table'
+    default: op
+  postbits.portabletools.grindstone:
+    description: 'Permission to use portable grindstone'
+    default: op
+  postbits.portabletools.cartography:
+    description: 'Permission to use portable cartography table'
+    default: op
+  postbits.portabletools.enchanting:
+    description: 'Permission to use portable enchanting table'
+    default: op
+  postbits.portabletools.smithing:
+    description: 'Permission to use portable smithing table'
+    default: op
+  postbits.portabletools.enderchest:
+    description: 'Permission to use portable enderchest'
+    default: op

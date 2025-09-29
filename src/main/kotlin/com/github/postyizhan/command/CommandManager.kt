@@ -4,6 +4,7 @@ import com.github.postyizhan.PostBits
 import com.github.postyizhan.chair.ChairCommand
 import com.github.postyizhan.head.HeadCommand
 import com.github.postyizhan.invedit.InvEditCommand
+import com.github.postyizhan.portabletools.PortableToolsCommand
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.command.Command
 import org.bukkit.command.CommandExecutor
@@ -27,6 +28,10 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
 
     private val headCommand: HeadCommand? by lazy {
         plugin.getHeadService()?.let { HeadCommand(plugin, it) }
+    }
+
+    private val portableToolsCommand: PortableToolsCommand? by lazy {
+        plugin.getPortableToolsService()?.let { PortableToolsCommand(plugin, it) }
     }
 
 
@@ -68,6 +73,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             }
             "head" -> {
                 return handleHeadCommand(sender, args.drop(1).toTypedArray())
+            }
+            "craft", "grindstone", "cartography", "enchanting", "smithing", "enderchest" -> {
+                return handlePortableToolsCommand(sender, args)
             }
             "help" -> {
                 showHelp(sender)
@@ -162,6 +170,18 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         return headCmd.execute(sender, arrayOf(*args))
     }
 
+    /**
+     * 处理随身工具命令
+     */
+    private fun handlePortableToolsCommand(sender: CommandSender, args: Array<out String>): Boolean {
+        val portableToolsCmd = portableToolsCommand
+        if (portableToolsCmd == null) {
+            MessageUtil.sendMessage(sender, "messages.module_disabled")
+            return true
+        }
+        return portableToolsCmd.execute(sender, arrayOf(*args))
+    }
+
 
 
 
@@ -190,6 +210,11 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         // 只有在头部装备模块启用时才显示头部装备命令
         if (plugin.getConfigManager().getConfig().getBoolean("modules.head.enabled", false)) {
             MessageUtil.sendMessage(sender, "commands.help.head")
+        }
+
+        // 只有在随身工具模块启用时才显示随身工具命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.portabletools.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.portabletools")
         }
 
 
@@ -236,6 +261,28 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 completions.add("head")
             }
 
+            // 随身工具命令（仅在模块启用时显示）
+            if (plugin.getConfigManager().getConfig().getBoolean("modules.portabletools.enabled", false)) {
+                if (sender.hasPermission("postbits.portabletools.craft")) {
+                    completions.add("craft")
+                }
+                if (sender.hasPermission("postbits.portabletools.grindstone")) {
+                    completions.add("grindstone")
+                }
+                if (sender.hasPermission("postbits.portabletools.cartography")) {
+                    completions.add("cartography")
+                }
+                if (sender.hasPermission("postbits.portabletools.enchanting")) {
+                    completions.add("enchanting")
+                }
+                if (sender.hasPermission("postbits.portabletools.smithing")) {
+                    completions.add("smithing")
+                }
+                if (sender.hasPermission("postbits.portabletools.enderchest")) {
+                    completions.add("enderchest")
+                }
+            }
+
 
             completions.add("help")
             
@@ -256,6 +303,12 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                     val headCmd = headCommand
                     if (headCmd != null && sender.hasPermission("postbits.head.use")) {
                         return headCmd.onTabComplete(sender, args.drop(1).toTypedArray())
+                    }
+                }
+                "craft", "grindstone", "cartography", "enchanting", "smithing", "enderchest" -> {
+                    val portableToolsCmd = portableToolsCommand
+                    if (portableToolsCmd != null) {
+                        return portableToolsCmd.onTabComplete(sender, args.drop(1).toTypedArray())
                     }
                 }
             }
