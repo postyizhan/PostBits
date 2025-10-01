@@ -26,31 +26,12 @@ modules:
   chair:
     enabled: false
     # 可以坐下的方块类型
-    # 支持的格式：
-    #   1. 原版方块（小写）：stairs, slabs, oak_stairs
-    #   2. 自定义方块（必须使用提供者标记）：[provider] blockId
-    # 
-    # 自定义方块配置格式（使用提供者标记）：
-    #   [ce] oak_chair              # CraftEngine 的橡木椅子
-    #   [CraftEngine] fir_stairs    # 使用完整插件名也可以
-    #   [ia] ruby_block             # ItemsAdder 的红宝石方块
-    #   [ox] custom_bench           # Oraxen 的自定义长椅
-    # 
-    # 支持的提供者别名：
-    #   ce/craftengine/CraftEngine -> CraftEngine
-    #   ia/itemsadder/ItemsAdder -> ItemsAdder
-    #   ox/oraxen/Oraxen -> Oraxen
-    # 
-    # 通配符匹配：
-    #   [ce] *          # 匹配 CraftEngine 的所有方块
-    #   [ox] custom_*   # 匹配 Oraxen 的所有 custom_ 开头的方块
     sittable-blocks:
       - "stairs"  # 所有原版楼梯方块
       - "slabs"   # 所有原版台阶方块
-      # 自定义方块示例：
-      # - "[ce] oak_chair"
-      # - "[ia] ruby_block"
-      # - "[ox] custom_bench"
+      # - "[ce] yizhan:oak_chair"
+      # - "[ia] yizhan:ruby_block"
+      # - "[ox] yizhan:custom_bench"
     # 是否需要空手才能坐下
     empty-hand-only: true
     # 最大坐下距离（0为无限制）
@@ -91,29 +72,11 @@ modules:
     # 冷却时间（毫秒）
     cooldown-time: 500
     # 电梯方块类型
-    # 支持的格式：
-    #   1. 原版方块（大写）：IRON_BLOCK, GOLD_BLOCK
-    #   2. 自定义方块（必须使用提供者标记）：[provider] blockId
-    # 
-    # 自定义方块配置格式（必须使用提供者标记）：
-    #   [ce] elevator_block      # CraftEngine 的电梯方块
-    #   [ia] lift_platform       # ItemsAdder 的电梯平台
-    #   [ox] lift_block          # Oraxen 的电梯方块
     elevator-blocks:
-      - "IRON_BLOCK"
       - "GOLD_BLOCK"
-      - "DIAMOND_BLOCK"
-      - "EMERALD_BLOCK"
-      - "QUARTZ_BLOCK"
-      - "LAPIS_BLOCK"
-      - "REDSTONE_BLOCK"
-      - "COAL_BLOCK"
-      - "COPPER_BLOCK"
-      - "NETHERITE_BLOCK"
-      # 自定义方块示例：
-      # - "[ce] elevator_block"
-      # - "[ia] lift_platform"
-      # - "[ox] lift_block"
+      # - "[ce] yizhan:oak_chair"
+      # - "[ia] yizhan:ruby_block"
+      # - "[ox] yizhan:custom_bench"
     # 音效设置
     sound-enabled: true
     up-sound: "ENTITY_ENDERMAN_TELEPORT"

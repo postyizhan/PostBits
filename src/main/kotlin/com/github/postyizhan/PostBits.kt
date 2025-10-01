@@ -1,23 +1,15 @@
 package com.github.postyizhan
 
-import com.github.postyizhan.chair.ChairEventHandler
-import com.github.postyizhan.chair.ChairService
 import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
-import com.github.postyizhan.elevator.ElevatorEventHandler
-import com.github.postyizhan.elevator.ElevatorService
-import com.github.postyizhan.head.HeadService
 import com.github.postyizhan.integration.HookManager
 import com.github.postyizhan.integration.hooks.CraftEngineHook
 import com.github.postyizhan.integration.hooks.ItemsAdderHook
 import com.github.postyizhan.integration.hooks.OraxenHook
-import com.github.postyizhan.invedit.InvEditEventHandler
-import com.github.postyizhan.invedit.InvEditService
-import com.github.postyizhan.portabletools.PortableToolsService
+import com.github.postyizhan.module.*
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
 import org.bukkit.command.CommandSender
-
 import org.bukkit.plugin.java.JavaPlugin
 
 /**
@@ -30,15 +22,8 @@ class PostBits : JavaPlugin() {
     private lateinit var configManager: ConfigManager
     private lateinit var commandManager: CommandManager
     private lateinit var hookManager: HookManager
+    private lateinit var moduleManager: ModuleManager
     private lateinit var updateChecker: UpdateChecker
-    private lateinit var chairService: ChairService
-    private lateinit var chairEventHandler: ChairEventHandler
-    private lateinit var invEditService: InvEditService
-    private lateinit var invEditEventHandler: InvEditEventHandler
-    private lateinit var elevatorService: ElevatorService
-    private lateinit var elevatorEventHandler: ElevatorEventHandler
-    private lateinit var headService: HeadService
-    private lateinit var portableToolsService: PortableToolsService
     private var debugEnabled: Boolean = false
 
     companion object {
@@ -67,16 +52,12 @@ class PostBits : JavaPlugin() {
 
         // 获取调试模式设置
         debugEnabled = configManager.getConfig().getBoolean("debug", false)
-        
+
         // 初始化插件挂钩系统
         hookManager = HookManager(this)
-        
-        // 注册所有支持的插件挂钩
         hookManager.registerHook(CraftEngineHook())
         hookManager.registerHook(ItemsAdderHook())
         hookManager.registerHook(OraxenHook())
-        
-        // 初始化所有挂钩
         hookManager.initializeAll()
 
         // 初始化命令管理器
@@ -84,55 +65,9 @@ class PostBits : JavaPlugin() {
         getCommand("postbits")?.setExecutor(commandManager)
         getCommand("postbits")?.tabCompleter = commandManager
 
-
-
-        // 初始化椅子服务
-        if (configManager.getConfig().getBoolean("modules.chair.enabled", false)) {
-            chairService = ChairService(this)
-            chairEventHandler = ChairEventHandler(this, chairService)
-            server.pluginManager.registerEvents(chairEventHandler, this)
-            if (debugEnabled) {
-                logger.info("Debug: Chair module enabled")
-            }
-        }
-
-        // 初始化背包编辑服务
-        if (configManager.getConfig().getBoolean("modules.invedit.enabled", false)) {
-            invEditService = InvEditService(this)
-            invEditEventHandler = InvEditEventHandler(this, invEditService)
-            server.pluginManager.registerEvents(invEditEventHandler, this)
-            if (debugEnabled) {
-                logger.info("Debug: InvEdit module enabled")
-            }
-        }
-
-        // 初始化电梯服务
-        if (configManager.getConfig().getBoolean("modules.elevator.enabled", false)) {
-            elevatorService = ElevatorService(this)
-            elevatorEventHandler = ElevatorEventHandler(this, elevatorService)
-            server.pluginManager.registerEvents(elevatorEventHandler, this)
-            if (debugEnabled) {
-                logger.info("Debug: Elevator module enabled")
-            }
-        }
-
-        // 初始化头部装备服务
-        if (configManager.getConfig().getBoolean("modules.head.enabled", false)) {
-            headService = HeadService(this)
-            headService.initialize()
-            if (debugEnabled) {
-                logger.info("Debug: Head module enabled")
-            }
-        }
-
-        // 初始化随身工具服务
-        if (configManager.getConfig().getBoolean("modules.portabletools.enabled", false)) {
-            portableToolsService = PortableToolsService(this)
-            portableToolsService.initialize()
-            if (debugEnabled) {
-                logger.info("Debug: PortableTools module enabled")
-            }
-        }
+        // 初始化模块管理器
+        moduleManager = ModuleManager(this)
+        moduleManager.initializeModules()
 
         // 初始化更新检查器
         if (configManager.getConfig().getBoolean("modules.update-checker.enabled", false)) {
@@ -169,31 +104,11 @@ class PostBits : JavaPlugin() {
      * 插件禁用时触发
      */
     override fun onDisable() {
-        // 清理椅子服务
-        if (this::chairService.isInitialized) {
-            chairService.cleanup()
+        // 清理所有模块
+        if (this::moduleManager.isInitialized) {
+            moduleManager.cleanupModules()
         }
 
-        // 清理背包编辑服务
-        if (this::invEditService.isInitialized) {
-            invEditService.cleanup()
-        }
-
-        // 清理电梯服务
-        if (this::elevatorService.isInitialized) {
-            elevatorService.cleanup()
-        }
-
-        // 清理头部装备服务
-        if (this::headService.isInitialized) {
-            headService.cleanup()
-        }
-
-        // 清理随身工具服务
-        if (this::portableToolsService.isInitialized) {
-            portableToolsService.cleanup()
-        }
-        
         // 卸载所有插件挂钩
         if (this::hookManager.isInitialized) {
             hookManager.unloadAll()
@@ -223,63 +138,8 @@ class PostBits : JavaPlugin() {
             }
         }
 
-        // 重新初始化椅子服务
-        if (configManager.getConfig().getBoolean("modules.chair.enabled", false)) {
-            if (!this::chairService.isInitialized) {
-                chairService = ChairService(this)
-                chairEventHandler = ChairEventHandler(this, chairService)
-                server.pluginManager.registerEvents(chairEventHandler, this)
-            }
-        } else if (this::chairService.isInitialized) {
-            // 如果椅子模块被禁用，清理现有座位
-            chairService.cleanup()
-        }
-
-        // 重新初始化背包编辑服务
-        if (configManager.getConfig().getBoolean("modules.invedit.enabled", false)) {
-            if (!this::invEditService.isInitialized) {
-                invEditService = InvEditService(this)
-                invEditEventHandler = InvEditEventHandler(this, invEditService)
-                server.pluginManager.registerEvents(invEditEventHandler, this)
-            }
-        } else if (this::invEditService.isInitialized) {
-            // 如果背包编辑模块被禁用，清理现有会话
-            invEditService.cleanup()
-        }
-
-        // 重新初始化电梯服务
-        if (configManager.getConfig().getBoolean("modules.elevator.enabled", false)) {
-            if (!this::elevatorService.isInitialized) {
-                elevatorService = ElevatorService(this)
-                elevatorEventHandler = ElevatorEventHandler(this, elevatorService)
-                server.pluginManager.registerEvents(elevatorEventHandler, this)
-            }
-        } else if (this::elevatorService.isInitialized) {
-            // 如果电梯模块被禁用，清理现有数据
-            elevatorService.cleanup()
-        }
-
-        // 重新初始化头部装备服务
-        if (configManager.getConfig().getBoolean("modules.head.enabled", false)) {
-            if (!this::headService.isInitialized) {
-                headService = HeadService(this)
-                headService.initialize()
-            }
-        } else if (this::headService.isInitialized) {
-            // 如果头部装备模块被禁用，清理现有数据
-            headService.cleanup()
-        }
-
-        // 重新初始化随身工具服务
-        if (configManager.getConfig().getBoolean("modules.portabletools.enabled", false)) {
-            if (!this::portableToolsService.isInitialized) {
-                portableToolsService = PortableToolsService(this)
-                portableToolsService.initialize()
-            }
-        } else if (this::portableToolsService.isInitialized) {
-            // 如果随身工具模块被禁用，清理现有数据
-            portableToolsService.cleanup()
-        }
+        // 重新加载所有模块
+        moduleManager.reloadModules()
 
         if (debugEnabled) {
             logger.info("Debug: Plugin configuration reloaded")
@@ -332,44 +192,30 @@ class PostBits : JavaPlugin() {
     /**
      * 获取椅子服务
      */
-    fun getChairService(): ChairService? {
-        return if (this::chairService.isInitialized) chairService else null
-    }
+    fun getChairService() = moduleManager.getModule<ChairModule>("chair")?.getService()
 
     /**
      * 获取背包编辑服务
      */
-    fun getInvEditService(): InvEditService? {
-        return if (this::invEditService.isInitialized) invEditService else null
-    }
+    fun getInvEditService() = moduleManager.getModule<InvEditModule>("invedit")?.getService()
 
     /**
      * 获取电梯服务
      */
-    fun getElevatorService(): ElevatorService? {
-        return if (this::elevatorService.isInitialized) elevatorService else null
-    }
+    fun getElevatorService() = moduleManager.getModule<ElevatorModule>("elevator")?.getService()
 
     /**
      * 获取头部装备服务
      */
-    fun getHeadService(): HeadService? {
-        return if (this::headService.isInitialized) headService else null
-    }
+    fun getHeadService() = moduleManager.getModule<HeadModule>("head")?.getService()
 
     /**
      * 获取随身工具服务
      */
-    fun getPortableToolsService(): PortableToolsService? {
-        return if (this::portableToolsService.isInitialized) portableToolsService else null
-    }
+    fun getPortableToolsService() = moduleManager.getModule<PortableToolsModule>("portabletools")?.getService()
     
     /**
      * 获取插件挂钩管理器
      */
-    fun getHookManager(): HookManager {
-        return hookManager
-    }
-
-
+    fun getHookManager(): HookManager = hookManager
 }

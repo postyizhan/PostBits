@@ -39,9 +39,6 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
             "stand", "up" -> {
                 return handleStandCommand(sender)
             }
-            "info" -> {
-                return handleInfoCommand(sender)
-            }
             else -> {
                 MessageUtil.sendMessage(sender, "chair.unknown_subcommand")
                 return true
@@ -75,7 +72,7 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
         }
 
         // 检查玩家状态
-        if (!player.isValid || player.isSneaking || !player.isOnGround || 
+        if (!player.isValid || player.isSneaking || !player.isOnGround ||
             player.vehicle != null || player.isSleeping) {
             MessageUtil.sendMessage(player, "chair.invalid_state")
             return true
@@ -83,7 +80,7 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
 
         // 获取玩家脚下的方块
         val block = player.location.block.getRelative(org.bukkit.block.BlockFace.DOWN)
-        
+
         // 检查方块是否可以坐
         if (!chairService.isSittableBlock(block)) {
             MessageUtil.sendMessage(player, "chair.not_sittable")
@@ -132,35 +129,6 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
         } else {
             MessageUtil.sendMessage(player, "chair.stand_failed")
         }
-
-        return true
-    }
-
-    /**
-     * 处理信息命令
-     */
-    private fun handleInfoCommand(player: Player): Boolean {
-        if (!player.hasPermission("postbits.chair.info")) {
-            MessageUtil.sendMessage(player, "messages.no_permission")
-            return true
-        }
-
-        val seat = chairService.getPlayerSeat(player)
-        if (seat == null) {
-            MessageUtil.sendMessage(player, "chair.not_sitting")
-            return true
-        }
-
-        // 发送座位信息
-        val duration = seat.getLifetimeInSeconds() // 获取坐下时长（秒）
-        val blockType = seat.block.type.name
-        val location = seat.block.location
-        
-        MessageUtil.sendMessage(player, "chair.info_header")
-        player.sendMessage("§7方块类型: §e${blockType}")
-        player.sendMessage("§7位置: §e${location.blockX}, ${location.blockY}, ${location.blockZ}")
-        player.sendMessage("§7坐下时长: §e${duration}秒")
-        player.sendMessage("§7座位ID: §e${seat.seatId}")
 
         return true
     }

@@ -5,7 +5,7 @@ api-version: '1.13'
 description: 'A modular Minecraft plugin with various small features'
 authors: [postyizhan]
 website: 'https://github.com/postyizhan/PostBits'
-softdepend: [CraftEngine, ItemsAdder]
+softdepend: [CraftEngine, ItemsAdder, Oraxen]
 
 commands:
   postbits:
@@ -31,13 +31,9 @@ permissions:
     default: op
     children:
       postbits.chair.sit: true
-      postbits.chair.info: true
   postbits.chair.sit:
     description: 'Permission to sit on blocks'
     default: true
-  postbits.chair.info:
-    description: 'Permission to view seat information'
-    default: op
   postbits.invedit:
     description: 'Access to all inventory edit functions'
     default: op
