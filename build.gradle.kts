@@ -11,10 +11,25 @@ repositories {
     maven("https://oss.sonatype.org/content/groups/public/")
     maven("https://jitpack.io")
     maven("https://repo.codemc.io/repository/maven-snapshots/")
+    maven("https://repo.oraxen.com/releases")
+    
+    // CraftEngine 仓库（使用中国镜像）
+    maven("https://repo-momi.gtemc.cn/releases/")
+    maven("https://repo.gtemc.net/releases/") // 备用镜像
 }
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT")
+    
+    // CraftEngine
+    compileOnly("net.momirealms:craft-engine-core:0.0.22")
+    compileOnly("net.momirealms:craft-engine-bukkit:0.0.22")
+
+    // ItemsAdder
+    compileOnly("com.github.LoneDev6:API-ItemsAdder:3.6.1")
+
+    // Oraxen
+    compileOnly("io.th0rgal:oraxen:1.189.0")
 }
 
 java {
@@ -29,8 +44,8 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
 tasks.jar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     
-    from(configurations.runtimeClasspath.get().map { 
-        if (it.isDirectory) it else zipTree(it) 
+    from(configurations.runtimeClasspath.get().map {
+        if (it.isDirectory) it else zipTree(it)
     })
     
     exclude("META-INF/DEPENDENCIES")

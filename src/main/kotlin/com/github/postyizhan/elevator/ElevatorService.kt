@@ -1,6 +1,7 @@
 package com.github.postyizhan.elevator
 
 import com.github.postyizhan.PostBits
+import com.github.postyizhan.integration.BlockPattern
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.Location
 import org.bukkit.Material
@@ -99,11 +100,84 @@ class ElevatorService(private val plugin: PostBits) {
             return false
         }
 
-        val material = block.type
         val config = plugin.getConfigManager().getConfig()
         val elevatorBlocks = config.getStringList("modules.elevator.elevator-blocks")
+        val hookManager = plugin.getHookManager()
+        
+        // 解析所有配置模式
+        val patterns = BlockPattern.parseList(elevatorBlocks)
+        
+        // 先检查是否是自定义方块（如果有方块提供者）
+        if (hookManager.hasBlockProviders()) {
+            val isCustom = hookManager.isCustomBlock(block)
+            
+            if (isCustom) {
+                val blockId = hookManager.getCustomBlockId(block)
+                if (plugin.isDebugEnabled()) {
+                    plugin.logger.info("Debug: [Elevator] Custom block ID: $blockId")
+                    plugin.logger.info("Debug: [Elevator] Elevator blocks configured: $elevatorBlocks")
+                }
+                
+                // 提取自定义方块模式
+                val customBlockPatterns = patterns.filter { it.isCustomBlock }
+                
+                if (customBlockPatterns.isEmpty()) {
+                    if (plugin.isDebugEnabled()) {
+                        plugin.logger.info("Debug: [Elevator] No custom block patterns configured")
+                    }
+                    return false
+                }
+                
+                // 遍历每个模式进行匹配（只支持提供者标记格式）
+                for (pattern in customBlockPatterns) {
+                    // 必须指定提供者
+                    if (pattern.provider == null) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.warning("Debug: [Elevator] Custom block pattern '${pattern.blockId}' is missing provider tag! Use format: [provider] blockId")
+                            plugin.logger.warning("Debug: [Elevator] Example: [ce] elevator_block, [ia] lift_platform, [ox] lift_block")
+                        }
+                        continue
+                    }
+                    
+                    // 查找指定的提供者
+                    val provider = hookManager.getProviderByName(pattern.provider)
+                    if (provider == null) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.info("Debug: [Elevator] Provider '${pattern.provider}' not found for pattern: $pattern")
+                        }
+                        continue
+                    }
+                    
+                    if (plugin.isDebugEnabled()) {
+                        plugin.logger.info("Debug: [Elevator] Checking with provider: ${provider.providerName}")
+                    }
+                    
+                    val matched = provider.matchesBlockId(block, listOf(pattern.blockId))
+                    
+                    if (matched) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.info("Debug: [Elevator] ✓ Custom elevator block matched: $blockId with pattern: $pattern")
+                        }
+                        return true
+                    }
+                }
+                
+                if (plugin.isDebugEnabled()) {
+                    plugin.logger.info("Debug: [Elevator] ✗ Custom block $blockId does not match any configured patterns")
+                }
+                
+                // 如果是自定义方块但没有匹配，直接返回 false
+                return false
+            }
+        }
+        
+        // 检查原版方块
+        val material = block.type
+        
+        // 提取原版方块模式（不包含冒号的）
+        val vanillaPatterns = patterns.filter { !it.isCustomBlock }.map { it.blockId }
 
-        return elevatorBlocks.any { 
+        return vanillaPatterns.any { 
             try {
                 Material.valueOf(it.uppercase()) == material
             } catch (e: IllegalArgumentException) {

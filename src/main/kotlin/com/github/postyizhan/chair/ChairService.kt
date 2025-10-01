@@ -1,6 +1,7 @@
 package com.github.postyizhan.chair
 
 import com.github.postyizhan.PostBits
+import com.github.postyizhan.integration.BlockPattern
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.Bukkit
 import org.bukkit.Location
@@ -189,7 +190,7 @@ class ChairService(private val plugin: PostBits) {
         
         // 让玩家骑乘
         armorStand.addPassenger(player)
-        
+
         // 创建座位对象
         val seat = ChairSeat(
             block = block,
@@ -198,7 +199,7 @@ class ChairService(private val plugin: PostBits) {
             seatEntity = armorStand,
             returnLocation = returnLocation
         )
-        
+
         // 存储座位信息
         seats[player.uniqueId] = seat
         blockSeats.computeIfAbsent(block) { ConcurrentHashMap.newKeySet() }.add(seat)
@@ -332,7 +333,7 @@ class ChairService(private val plugin: PostBits) {
         
         return location
     }
-    
+
     /**
      * 获取方块高度偏移（台阶等特殊方块）
      */
@@ -438,16 +439,16 @@ class ChairService(private val plugin: PostBits) {
         val world = location.world ?: return null
         
         try {
-            val armorStand = world.spawnEntity(location, EntityType.ARMOR_STAND) as ArmorStand
-            
-            // 设置盔甲架属性
-            armorStand.isVisible = false
-            armorStand.isSmall = true
-            armorStand.setGravity(false)
-            armorStand.isInvulnerable = true
-            armorStand.setCanPickupItems(false)
+        val armorStand = world.spawnEntity(location, EntityType.ARMOR_STAND) as ArmorStand
+        
+        // 设置盔甲架属性
+        armorStand.isVisible = false
+        armorStand.isSmall = true
+        armorStand.setGravity(false)
+        armorStand.isInvulnerable = true
+        armorStand.setCanPickupItems(false)
             armorStand.customName = SEAT_TAG
-            armorStand.isCustomNameVisible = false
+        armorStand.isCustomNameVisible = false
             
             // 设置为非持久化（避免保存到世界文件）
             try {
@@ -464,8 +465,8 @@ class ChairService(private val plugin: PostBits) {
             if (!canRotate) {
                 armorStand.teleport(location)
             }
-            
-            return armorStand
+        
+        return armorStand
         } catch (e: Exception) {
             plugin.logger.warning("Failed to create seat entity: ${e.message}")
             if (plugin.isDebugEnabled()) {
@@ -562,26 +563,102 @@ class ChairService(private val plugin: PostBits) {
     fun isSittableBlock(block: Block): Boolean {
         val config = plugin.getConfigManager().getConfig()
         val sittableBlocks = config.getStringList("modules.chair.sittable-blocks")
+        val hookManager = plugin.getHookManager()
         
-        // 检查方块名称（小写）
+        // 解析所有配置模式
+        val patterns = BlockPattern.parseList(sittableBlocks)
+        
+        // 先检查是否是自定义方块（如果有方块提供者）
+        if (hookManager.hasBlockProviders()) {
+            val isCustom = hookManager.isCustomBlock(block)
+            
+            if (plugin.isDebugEnabled() && isCustom) {
+                plugin.logger.info("Debug: [Chair] Detected custom block at ${block.location}")
+                plugin.logger.info("Debug: [Chair] Available providers: ${hookManager.getBlockProviders().joinToString { it.providerName }}")
+            }
+            
+            if (isCustom) {
+                val blockId = hookManager.getCustomBlockId(block)
+                if (plugin.isDebugEnabled()) {
+                    plugin.logger.info("Debug: [Chair] Custom block ID: $blockId")
+                    plugin.logger.info("Debug: [Chair] Sittable blocks configured: $sittableBlocks")
+                }
+                
+                // 提取自定义方块模式
+                val customBlockPatterns = patterns.filter { it.isCustomBlock }
+                
+                if (customBlockPatterns.isEmpty()) {
+                    if (plugin.isDebugEnabled()) {
+                        plugin.logger.info("Debug: [Chair] No custom block patterns configured")
+                    }
+                    return false
+                }
+                
+                // 遍历每个模式进行匹配（只支持提供者标记格式）
+                for (pattern in customBlockPatterns) {
+                    // 必须指定提供者
+                    if (pattern.provider == null) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.warning("Debug: [Chair] Custom block pattern '${pattern.blockId}' is missing provider tag! Use format: [provider] blockId")
+                            plugin.logger.warning("Debug: [Chair] Example: [ce] oak_chair, [ia] ruby_block, [ox] custom_stair")
+                        }
+                        continue
+                    }
+                    
+                    // 查找指定的提供者
+                    val provider = hookManager.getProviderByName(pattern.provider)
+                    if (provider == null) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.info("Debug: [Chair] Provider '${pattern.provider}' not found for pattern: $pattern")
+                        }
+                        continue
+                    }
+                    
+                    if (plugin.isDebugEnabled()) {
+                        plugin.logger.info("Debug: [Chair] Checking with provider: ${provider.providerName}")
+                    }
+                    
+                    val matched = provider.matchesBlockId(block, listOf(pattern.blockId))
+                    
+                    if (matched) {
+                        if (plugin.isDebugEnabled()) {
+                            plugin.logger.info("Debug: [Chair] ✓ Custom block matched: $blockId with pattern: $pattern")
+                        }
+                        return true
+                    }
+                }
+                
+                if (plugin.isDebugEnabled()) {
+                    plugin.logger.info("Debug: [Chair] ✗ Custom block $blockId does not match any configured patterns")
+                }
+                
+                // 如果是自定义方块但没有匹配，直接返回 false
+                return false
+            }
+        }
+        
+        // 检查原版方块
         val blockName = block.type.name.lowercase()
         
+        // 提取原版方块模式（不包含冒号的）
+        val vanillaPatterns = patterns.filter { !it.isCustomBlock }.map { it.blockId }
+        
         // 支持通配符 *
-        if (sittableBlocks.contains("*")) {
+        if (vanillaPatterns.contains("*")) {
             return true
         }
         
         // 检查具体方块类型
-        if (sittableBlocks.contains(blockName)) {
+        if (vanillaPatterns.contains(blockName)) {
             return true
         }
         
         // 检查标签（如 stairs, slabs）
-        if (sittableBlocks.contains("stairs") && Tag.STAIRS.isTagged(block.type)) {
+        if (vanillaPatterns.contains("stairs") && Tag.STAIRS.isTagged(block.type)) {
             return true
         }
         
-        if (sittableBlocks.contains("slabs") && Tag.SLABS.isTagged(block.type)) {
+        if (vanillaPatterns.contains("slabs") && Tag.SLABS.isTagged(block.type)) {
             return true
         }
         

@@ -5,6 +5,7 @@ api-version: '1.13'
 description: 'A modular Minecraft plugin with various small features'
 authors: [postyizhan]
 website: 'https://github.com/postyizhan/PostBits'
+softdepend: [CraftEngine, ItemsAdder]
 
 commands:
   postbits:

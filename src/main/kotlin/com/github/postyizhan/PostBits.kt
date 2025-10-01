@@ -7,6 +7,10 @@ import com.github.postyizhan.config.ConfigManager
 import com.github.postyizhan.elevator.ElevatorEventHandler
 import com.github.postyizhan.elevator.ElevatorService
 import com.github.postyizhan.head.HeadService
+import com.github.postyizhan.integration.HookManager
+import com.github.postyizhan.integration.hooks.CraftEngineHook
+import com.github.postyizhan.integration.hooks.ItemsAdderHook
+import com.github.postyizhan.integration.hooks.OraxenHook
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.portabletools.PortableToolsService
@@ -25,6 +29,7 @@ class PostBits : JavaPlugin() {
 
     private lateinit var configManager: ConfigManager
     private lateinit var commandManager: CommandManager
+    private lateinit var hookManager: HookManager
     private lateinit var updateChecker: UpdateChecker
     private lateinit var chairService: ChairService
     private lateinit var chairEventHandler: ChairEventHandler
@@ -62,6 +67,17 @@ class PostBits : JavaPlugin() {
 
         // 获取调试模式设置
         debugEnabled = configManager.getConfig().getBoolean("debug", false)
+        
+        // 初始化插件挂钩系统
+        hookManager = HookManager(this)
+        
+        // 注册所有支持的插件挂钩
+        hookManager.registerHook(CraftEngineHook())
+        hookManager.registerHook(ItemsAdderHook())
+        hookManager.registerHook(OraxenHook())
+        
+        // 初始化所有挂钩
+        hookManager.initializeAll()
 
         // 初始化命令管理器
         commandManager = CommandManager(this)
@@ -176,6 +192,11 @@ class PostBits : JavaPlugin() {
         // 清理随身工具服务
         if (this::portableToolsService.isInitialized) {
             portableToolsService.cleanup()
+        }
+        
+        // 卸载所有插件挂钩
+        if (this::hookManager.isInitialized) {
+            hookManager.unloadAll()
         }
 
         // 输出禁用消息
@@ -341,6 +362,13 @@ class PostBits : JavaPlugin() {
      */
     fun getPortableToolsService(): PortableToolsService? {
         return if (this::portableToolsService.isInitialized) portableToolsService else null
+    }
+    
+    /**
+     * 获取插件挂钩管理器
+     */
+    fun getHookManager(): HookManager {
+        return hookManager
     }
 
 
