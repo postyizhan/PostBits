@@ -33,7 +33,7 @@ permissions:
       postbits.chair.info: true
   postbits.chair.sit:
     description: 'Permission to sit on blocks'
-    default: op
+    default: true
   postbits.chair.info:
     description: 'Permission to view seat information'
     default: op

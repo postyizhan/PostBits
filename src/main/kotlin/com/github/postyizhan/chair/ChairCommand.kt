@@ -152,7 +152,7 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
         }
 
         // 发送座位信息
-        val duration = seat.getSitDuration() / 1000 // 转换为秒
+        val duration = seat.getLifetimeInSeconds() // 获取坐下时长（秒）
         val blockType = seat.block.type.name
         val location = seat.block.location
         
@@ -160,6 +160,7 @@ class ChairCommand(private val plugin: PostBits, private val chairService: Chair
         player.sendMessage("§7方块类型: §e${blockType}")
         player.sendMessage("§7位置: §e${location.blockX}, ${location.blockY}, ${location.blockZ}")
         player.sendMessage("§7坐下时长: §e${duration}秒")
+        player.sendMessage("§7座位ID: §e${seat.seatId}")
 
         return true
     }

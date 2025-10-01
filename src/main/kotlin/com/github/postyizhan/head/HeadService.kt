@@ -12,6 +12,25 @@ import org.bukkit.inventory.ItemStack
  * @author postyizhan
  */
 class HeadService(private val plugin: PostBits) {
+    
+    /**
+     * 初始化服务
+     */
+    fun initialize() {
+        if (plugin.isDebugEnabled()) {
+            plugin.logger.info("Debug: HeadService initialized")
+        }
+    }
+    
+    /**
+     * 清理服务
+     */
+    fun cleanup() {
+        if (plugin.isDebugEnabled()) {
+            plugin.logger.info("Debug: HeadService cleaned up")
+        }
+    }
+    
     /**
      * 将手上的物品戴在头上
      */
