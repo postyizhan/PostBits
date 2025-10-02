@@ -2,7 +2,7 @@ package com.github.postyizhan.command
 
 import com.github.postyizhan.PostBits
 import com.github.postyizhan.chair.ChairCommand
-import com.github.postyizhan.head.HeadCommand
+import com.github.postyizhan.utility.UtilityCommand
 import com.github.postyizhan.invedit.InvEditCommand
 import com.github.postyizhan.portabletools.PortableToolsCommand
 import com.github.postyizhan.util.MessageUtil
@@ -26,8 +26,8 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         plugin.getInvEditService()?.let { InvEditCommand(plugin, it) }
     }
 
-    private val headCommand: HeadCommand? by lazy {
-        plugin.getHeadService()?.let { HeadCommand(plugin, it) }
+    private val utilityCommand: UtilityCommand? by lazy {
+        plugin.getUtilityService()?.let { UtilityCommand(plugin, it) }
     }
 
     private val portableToolsCommand: PortableToolsCommand? by lazy {
@@ -40,9 +40,14 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
      */
     override fun onCommand(sender: CommandSender, command: Command, label: String, args: Array<out String>): Boolean {
         when (command.name.lowercase()) {
-            "postbits" -> {
-                return handleMainCommand(sender, args)
-            }
+            "postbits" -> return handleMainCommand(sender, args)
+            "heal" -> return handleUtilityCommand("heal", sender, args)
+            "suicide" -> return handleUtilityCommand("suicide", sender, args)
+            "fix" -> return handleUtilityCommand("fix", sender, args)
+            "hat" -> return handleUtilityCommand("hat", sender, args)
+            "speed" -> return handleUtilityCommand("speed", sender, args)
+            "fly" -> return handleUtilityCommand("fly", sender, args)
+            "vanish" -> return handleUtilityCommand("vanish", sender, args)
         }
         return false
     }
@@ -70,9 +75,6 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             }
             "invedit" -> {
                 return handleInvEditCommand(sender, args.drop(1).toTypedArray())
-            }
-            "head" -> {
-                return handleHeadCommand(sender, args.drop(1).toTypedArray())
             }
             "craft", "grindstone", "cartography", "enchanting", "smithing", "enderchest" -> {
                 return handlePortableToolsCommand(sender, args)
@@ -159,15 +161,25 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
     }
 
     /**
-     * 处理头部装备命令
+     * 处理实用命令
      */
-    private fun handleHeadCommand(sender: CommandSender, args: Array<out String>): Boolean {
-        val headCmd = headCommand
-        if (headCmd == null) {
+    private fun handleUtilityCommand(commandType: String, sender: CommandSender, args: Array<out String>): Boolean {
+        val utilityCmd = utilityCommand
+        if (utilityCmd == null) {
             MessageUtil.sendMessage(sender, "messages.module_disabled")
             return true
         }
-        return headCmd.execute(sender, arrayOf(*args))
+        
+        return when (commandType) {
+            "heal" -> utilityCmd.handleHeal(sender, arrayOf(*args))
+            "suicide" -> utilityCmd.handleSuicide(sender, arrayOf(*args))
+            "fix" -> utilityCmd.handleFix(sender, arrayOf(*args))
+            "hat" -> utilityCmd.handleHat(sender, arrayOf(*args))
+            "speed" -> utilityCmd.handleSpeed(sender, arrayOf(*args))
+            "fly" -> utilityCmd.handleFly(sender, arrayOf(*args))
+            "vanish" -> utilityCmd.handleVanish(sender, arrayOf(*args))
+            else -> false
+        }
     }
 
     /**
@@ -207,9 +219,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             MessageUtil.sendMessage(sender, "commands.help.invedit")
         }
 
-        // 只有在头部装备模块启用时才显示头部装备命令
-        if (plugin.getConfigManager().getConfig().getBoolean("modules.head.enabled", false)) {
-            MessageUtil.sendMessage(sender, "commands.help.head")
+        // 只有在实用命令模块启用时才显示实用命令
+        if (plugin.getConfigManager().getConfig().getBoolean("modules.utility.enabled", false)) {
+            MessageUtil.sendMessage(sender, "commands.help.utility")
         }
 
         // 只有在随身工具模块启用时才显示随身工具命令
@@ -225,6 +237,14 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
      * 处理命令补全
      */
     override fun onTabComplete(sender: CommandSender, command: Command, alias: String, args: Array<out String>): List<String>? {
+        // 处理独立的实用命令补全
+        when (command.name.lowercase()) {
+            "heal", "suicide", "fix", "vanish" -> return emptyList()
+            "hat" -> return utilityCommand?.onTabComplete("hat", args) ?: emptyList()
+            "speed" -> return utilityCommand?.onTabComplete("speed", args) ?: emptyList()
+            "fly" -> return utilityCommand?.onTabComplete("fly", args) ?: emptyList()
+        }
+        
         if (command.name.lowercase() != "postbits") {
             return null
         }
@@ -255,11 +275,6 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 completions.add("invedit")
             }
 
-            // 头部装备命令（仅在模块启用时显示）
-            if (sender.hasPermission("postbits.head.use") &&
-                plugin.getConfigManager().getConfig().getBoolean("modules.head.enabled", false)) {
-                completions.add("head")
-            }
 
             // 随身工具命令（仅在模块启用时显示）
             if (plugin.getConfigManager().getConfig().getBoolean("modules.portabletools.enabled", false)) {
@@ -297,12 +312,6 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                     val invEditCmd = invEditCommand
                     if (invEditCmd != null && sender.hasPermission("postbits.invedit.use")) {
                         return invEditCmd.onTabComplete(sender, args.drop(1).toTypedArray())
-                    }
-                }
-                "head" -> {
-                    val headCmd = headCommand
-                    if (headCmd != null && sender.hasPermission("postbits.head.use")) {
-                        return headCmd.onTabComplete(sender, args.drop(1).toTypedArray())
                     }
                 }
                 "craft", "grindstone", "cartography", "enchanting", "smithing", "enderchest" -> {

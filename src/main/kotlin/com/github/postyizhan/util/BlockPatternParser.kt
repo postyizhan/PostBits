@@ -1,4 +1,4 @@
-package com.github.postyizhan.integration
+package com.github.postyizhan.util
 
 /**
  * 方块模式解析器
@@ -7,7 +7,6 @@ package com.github.postyizhan.integration
  * 支持的格式：
  * - "stairs" - 原版方块标签
  * - "oak_stairs" - 原版方块名称
- * - "namespace:id" - 自定义方块 ID
  * - "[ce] namespace:id" - 指定提供者的自定义方块
  * - "[craftengine] namespace:id" - 完整提供者名称
  * 
@@ -74,4 +73,3 @@ data class BlockPattern(
         }
     }
 }
-

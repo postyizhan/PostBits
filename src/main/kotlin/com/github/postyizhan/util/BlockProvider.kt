@@ -1,4 +1,4 @@
-package com.github.postyizhan.integration
+package com.github.postyizhan.util
 
 import org.bukkit.block.Block
 
@@ -102,4 +102,3 @@ interface BlockProvider {
         }
     }
 }
-

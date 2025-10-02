@@ -5,7 +5,7 @@ import com.github.postyizhan.chair.ChairEventHandler
 import com.github.postyizhan.chair.ChairService
 import com.github.postyizhan.elevator.ElevatorEventHandler
 import com.github.postyizhan.elevator.ElevatorService
-import com.github.postyizhan.head.HeadService
+import com.github.postyizhan.utility.UtilityService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.portabletools.PortableToolsService
@@ -34,8 +34,8 @@ class ModuleManager(private val plugin: PostBits) {
         // 电梯模块
         registerModule("elevator", ElevatorModule(plugin))
         
-        // 头部装备模块
-        registerModule("head", HeadModule(plugin))
+        // 实用命令模块
+        registerModule("utility", UtilityModule(plugin))
         
         // 随身工具模块
         registerModule("portabletools", PortableToolsModule(plugin))
@@ -197,13 +197,17 @@ class ElevatorModule(plugin: PostBits) : BaseModule<ElevatorService>(plugin) {
 }
 
 /**
- * 头部装备模块
+ * 实用命令模块
  */
-class HeadModule(plugin: PostBits) : BaseModule<HeadService>(plugin) {
-    override fun createService() = HeadService(plugin)
+class UtilityModule(plugin: PostBits) : BaseModule<UtilityService>(plugin) {
+    override fun createService() = UtilityService(plugin)
 
-    override fun onServiceCreated(service: HeadService) {
+    override fun onServiceCreated(service: UtilityService) {
         service.initialize()
+        
+        // 注册事件处理器（用于 vanish 功能）
+        val eventHandler = com.github.postyizhan.utility.UtilityEventHandler(plugin, service)
+        plugin.server.pluginManager.registerEvents(eventHandler, plugin)
     }
 }
 

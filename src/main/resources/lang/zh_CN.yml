@@ -19,14 +19,14 @@ commands:
     update: "&7/postbits update &f- &f检查插件更新"
     chair: "&7/postbits chair [sit|stand] &f- &f椅子功能"
     invedit: "&7/postbits invedit <玩家名> &f- &f背包编辑功能"
-    head: "&7/postbits head [remove|help] &f- &f头部装备功能"
+    utility: "&7/heal|/fix|/hat|/speed|/fly &f- &f实用命令功能"
     portabletools: "&7/postbits craft|grindstone|cartography|enchanting|smithing|enderchest &f- &f随身工具功能"
 
 # 更新检查消息
 system:
   updater:
     update_checking: "{prefix}&7正在检查更新..."
-    update_available: "{prefix}&e发现新版本！当前版本：&{current_version}&e，最新版本：&a{latest_version}"
+    update_available: "{prefix}&e发现新版本！当前版本：&{current_version}&e，最新版本：&7{latest_version}"
     update_url: "{prefix}&e请访问：&bhttps://github.com/postyizhan/PostBits/releases/latest &e获取最新版本"
     up_to_date: "{prefix}&7您使用的是最新版本！"
 
@@ -64,13 +64,42 @@ elevator:
   no_floor_above: "{prefix}&7上方没有找到电梯楼层"
   no_floor_below: "{prefix}&7下方没有找到电梯楼层"
 
-# 头部装备功能消息
-head:
-  success: "{prefix}&7物品已戴在头上"
-  removed: "{prefix}&7已取下头上的物品"
-  no_item: "{prefix}&7手上没有物品"
-  no_helmet: "{prefix}&7头上没有物品"
-  help: "{prefix}&e用法: /postbits head [remove]"
+# 实用命令功能消息
+utility:
+  # /heal 命令
+  heal_success: "{prefix}&7你已完全恢复！"
+  
+  # /fix 命令
+  fix_success: "{prefix}&7物品已修复！"
+  fix_no_item: "{prefix}&7手上没有物品"
+  fix_not_damageable: "{prefix}&7该物品无法修复"
+  fix_already_full: "{prefix}&7该物品耐久已满"
+  
+  # /hat 命令
+  hat_success: "{prefix}&7物品已戴在头上"
+  hat_removed: "{prefix}&7已取下头上的物品"
+  hat_no_item: "{prefix}&7手上没有物品"
+  hat_no_helmet: "{prefix}&7头上没有物品"
+  hat_help: "{prefix}&e用法: /hat [remove]"
+  
+  # /speed 命令
+  speed_walk_success: "{prefix}&7行走速度已设置为 &e{speed}"
+  speed_fly_success: "{prefix}&7飞行速度已设置为 &e{speed}"
+  speed_reset: "{prefix}&7速度已重置为默认值"
+  speed_invalid_range: "{prefix}&c速度必须在 1-10 之间"
+  speed_invalid_number: "{prefix}&c无效的数字"
+  speed_help: "{prefix}&e用法: /speed <1-10> [walk|fly] 或 /speed reset"
+  
+  # /fly 命令
+  fly_enabled: "{prefix}&7飞行模式已开启"
+  fly_disabled: "{prefix}&7飞行模式已关闭"
+  fly_gamemode_conflict: "{prefix}&c你的游戏模式已经允许飞行"
+  fly_help: "{prefix}&e用法: /fly [on|off]"
+  
+  # /vanish 命令
+  vanish_enabled: "{prefix}&a你现在隐身了"
+  vanish_disabled: "{prefix}&7你不再隐身了"
+  vanish_protocollib_required: "{prefix}&c此功能需要 ProtocolLib 插件支持"
 
 # 随身工具功能消息
 portabletools:

@@ -1,7 +1,6 @@
-package com.github.postyizhan.integration.hooks
+package com.github.postyizhan.util.hook
 
-import com.github.postyizhan.integration.BlockProvider
-import com.github.postyizhan.integration.PluginHook
+import com.github.postyizhan.util.BlockProvider
 import org.bukkit.Bukkit
 import org.bukkit.block.Block
 import org.bukkit.plugin.Plugin
@@ -15,7 +14,7 @@ import org.bukkit.plugin.Plugin
 class CraftEngineHook : PluginHook {
     
     override val pluginName: String = "CraftEngine"
-    override val priority: Int = 10 // 高优先级
+    override val hookType: HookType = HookType.CUSTOM_BLOCK
     
     private var enabled = false
     private var blockProvider: CraftEngineBlockProvider? = null
@@ -65,8 +64,12 @@ class CraftEngineHook : PluginHook {
         blockProvider = null
     }
     
-    override fun getBlockProvider(): BlockProvider? {
-        return blockProvider
+    override fun <T> getService(serviceClass: Class<T>): T? {
+        @Suppress("UNCHECKED_CAST")
+        return when (serviceClass) {
+            BlockProvider::class.java -> blockProvider as? T
+            else -> null
+        }
     }
 }
 
@@ -172,4 +175,3 @@ class CraftEngineBlockProvider(private val apiClass: Class<*>, private val plugi
         return null
     }
 }
-

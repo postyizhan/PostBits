@@ -8,11 +8,13 @@ version = "1.0"
 repositories {
     mavenCentral()
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://oss.sonatype.org/content/groups/public/")
     maven("https://jitpack.io")
     maven("https://repo.codemc.io/repository/maven-snapshots/")
     maven("https://repo.oraxen.com/releases")
-    
+
+    // ProtocolLib 仓库
+    maven("https://repo.dmulloy2.net/repository/public/")
+
     // CraftEngine 仓库（使用中国镜像）
     maven("https://repo-momi.gtemc.cn/releases/")
     maven("https://repo.gtemc.net/releases/") // 备用镜像
@@ -20,7 +22,10 @@ repositories {
 
 dependencies {
     compileOnly("org.spigotmc:spigot-api:1.13-R0.1-SNAPSHOT")
-    
+
+    // ProtocolLib
+    compileOnly("com.comphenix.protocol:ProtocolLib:5.3.0")
+
     // CraftEngine
     compileOnly("net.momirealms:craft-engine-core:0.0.22")
     compileOnly("net.momirealms:craft-engine-bukkit:0.0.22")

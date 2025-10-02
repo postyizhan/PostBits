@@ -5,13 +5,34 @@ api-version: '1.13'
 description: 'A modular Minecraft plugin with various small features'
 authors: [postyizhan]
 website: 'https://github.com/postyizhan/PostBits'
-softdepend: [CraftEngine, ItemsAdder, Oraxen]
+softdepend: [ProtocolLib, CraftEngine, ItemsAdder, Oraxen]
 
 commands:
   postbits:
     description: 'PostBits main command'
     usage: '/postbits [reload|update]'
     aliases: [pb]
+  heal:
+    description: 'Heal yourself'
+    usage: '/heal'
+  suicide:
+    description: 'Commit suicide'
+    usage: '/suicide'
+  fix:
+    description: 'Fix item durability'
+    usage: '/fix'
+  hat:
+    description: 'Wear item as hat'
+    usage: '/hat [remove]'
+  speed:
+    description: 'Change movement speed'
+    usage: '/speed <1-10> [walk|fly]'
+  fly:
+    description: 'Toggle fly mode'
+    usage: '/fly [on|off]'
+  vanish:
+    description: 'Toggle invisibility'
+    usage: '/vanish'
 
 permissions:
   postbits.admin:
@@ -50,8 +71,40 @@ permissions:
   postbits.elevator.use:
     description: 'Permission to use elevators'
     default: op
-  postbits.head.use:
-    description: 'Permission to use head equipment'
+  postbits.utility:
+    description: 'Access to all utility commands'
+    default: op
+    children:
+      postbits.utility.heal: true
+      postbits.utility.suicide: true
+      postbits.utility.fix: true
+      postbits.utility.hat: true
+      postbits.utility.speed: true
+      postbits.utility.fly: true
+      postbits.utility.vanish: true
+  postbits.utility.heal:
+    description: 'Permission to use /heal'
+    default: op
+  postbits.utility.suicide:
+    description: 'Permission to use /suicide'
+    default: true
+  postbits.utility.fix:
+    description: 'Permission to use /fix'
+    default: op
+  postbits.utility.hat:
+    description: 'Permission to use /hat'
+    default: op
+  postbits.utility.speed:
+    description: 'Permission to use /speed'
+    default: op
+  postbits.utility.fly:
+    description: 'Permission to use /fly'
+    default: op
+  postbits.utility.vanish:
+    description: 'Permission to use /vanish'
+    default: op
+  postbits.utility.vanish.see:
+    description: 'Permission to see vanished players'
     default: op
   postbits.portabletools:
     description: 'Access to all portable tools'

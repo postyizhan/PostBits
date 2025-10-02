@@ -2,10 +2,11 @@ package com.github.postyizhan
 
 import com.github.postyizhan.command.CommandManager
 import com.github.postyizhan.config.ConfigManager
-import com.github.postyizhan.integration.HookManager
-import com.github.postyizhan.integration.hooks.CraftEngineHook
-import com.github.postyizhan.integration.hooks.ItemsAdderHook
-import com.github.postyizhan.integration.hooks.OraxenHook
+import com.github.postyizhan.util.hook.HookManager
+import com.github.postyizhan.util.hook.ProtocolLibHook
+import com.github.postyizhan.util.hook.CraftEngineHook
+import com.github.postyizhan.util.hook.ItemsAdderHook
+import com.github.postyizhan.util.hook.OraxenHook
 import com.github.postyizhan.module.*
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
@@ -55,15 +56,28 @@ class PostBits : JavaPlugin() {
 
         // 初始化插件挂钩系统
         hookManager = HookManager(this)
-        hookManager.registerHook(CraftEngineHook())
-        hookManager.registerHook(ItemsAdderHook())
-        hookManager.registerHook(OraxenHook())
+        hookManager.registerHook(ProtocolLibHook())  // 协议处理
+        hookManager.registerHook(CraftEngineHook())   // 自定义方块
+        hookManager.registerHook(ItemsAdderHook())    // 自定义方块
+        hookManager.registerHook(OraxenHook())        // 自定义方块
         hookManager.initializeAll()
 
         // 初始化命令管理器
         commandManager = CommandManager(this)
         getCommand("postbits")?.setExecutor(commandManager)
         getCommand("postbits")?.tabCompleter = commandManager
+        
+        // 注册实用命令
+        getCommand("heal")?.setExecutor(commandManager)
+        getCommand("suicide")?.setExecutor(commandManager)
+        getCommand("fix")?.setExecutor(commandManager)
+        getCommand("hat")?.setExecutor(commandManager)
+        getCommand("hat")?.tabCompleter = commandManager
+        getCommand("speed")?.setExecutor(commandManager)
+        getCommand("speed")?.tabCompleter = commandManager
+        getCommand("fly")?.setExecutor(commandManager)
+        getCommand("fly")?.tabCompleter = commandManager
+        getCommand("vanish")?.setExecutor(commandManager)
 
         // 初始化模块管理器
         moduleManager = ModuleManager(this)
@@ -205,9 +219,9 @@ class PostBits : JavaPlugin() {
     fun getElevatorService() = moduleManager.getModule<ElevatorModule>("elevator")?.getService()
 
     /**
-     * 获取头部装备服务
+     * 获取实用命令服务
      */
-    fun getHeadService() = moduleManager.getModule<HeadModule>("head")?.getService()
+    fun getUtilityService() = moduleManager.getModule<UtilityModule>("utility")?.getService()
 
     /**
      * 获取随身工具服务

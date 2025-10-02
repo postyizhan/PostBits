@@ -1,7 +1,7 @@
 package com.github.postyizhan.chair
 
 import com.github.postyizhan.PostBits
-import com.github.postyizhan.integration.BlockPattern
+import com.github.postyizhan.util.BlockPattern
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.Bukkit
 import org.bukkit.Location

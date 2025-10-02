@@ -90,8 +90,8 @@ modules:
     # 消息设置
     message-enabled: true
 
-  # 头部装备模块
-  head:
+  # 实用命令模块
+  utility:
     enabled: false
 
   # 随身工具模块

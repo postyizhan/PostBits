@@ -1,7 +1,7 @@
 package com.github.postyizhan.elevator
 
 import com.github.postyizhan.PostBits
-import com.github.postyizhan.integration.BlockPattern
+import com.github.postyizhan.util.BlockPattern
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.Location
 import org.bukkit.Material
