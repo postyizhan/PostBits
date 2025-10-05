@@ -1,0 +1,3 @@
+[submodule "aneToastAPI"]
+	path = aneToastAPI
+	url = https://github.com/therealthread/aneToastAPI.git
