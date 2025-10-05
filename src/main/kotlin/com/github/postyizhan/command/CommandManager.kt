@@ -70,6 +70,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             "update" -> {
                 return handleUpdateCommand(sender)
             }
+            "version" -> {
+                return handleVersionCommand(sender)
+            }
 
             "chair" -> {
                 return handleChairCommand(sender, args.drop(1).toTypedArray())
@@ -134,6 +137,21 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
         if (plugin.isDebugEnabled()) {
             plugin.logger.info("Debug: Update check requested by ${sender.name}")
         }
+        return true
+    }
+
+    /**
+     * 处理版本命令
+     */
+    private fun handleVersionCommand(sender: CommandSender): Boolean {
+        sender.sendMessage(MessageUtil.color("&3Post&bBits &8| &fv${plugin.description.version}"))
+        sender.sendMessage(MessageUtil.color("&7A modular Minecraft plugin with multiple features"))
+        sender.sendMessage(MessageUtil.color("&7"))
+        sender.sendMessage(MessageUtil.color("&f• Author: &7postyizhan"))
+        sender.sendMessage(MessageUtil.color("&f• GitHub: &7https://github.com/postyizhan/PostBits"))
+        sender.sendMessage(MessageUtil.color("&f• Docs: &7https://post.yizhan.wiki/PostBits/intro"))
+        sender.sendMessage(MessageUtil.color("&f• Discord: &7https://discord.com/invite/jN4Br8uhSS"))
+        sender.sendMessage(MessageUtil.color("&f• QQ Group: &7858694195"))
         return true
     }
 
@@ -265,6 +283,9 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
                 plugin.getConfigManager().getConfig().getBoolean("modules.update-checker.enabled", false)) {
                 completions.add("update")
             }
+            
+            // 版本命令（所有人可用）
+            completions.add("version")
 
             // 椅子命令（仅在模块启用时显示）
             if (sender.hasPermission("postbits.chair.sit") &&

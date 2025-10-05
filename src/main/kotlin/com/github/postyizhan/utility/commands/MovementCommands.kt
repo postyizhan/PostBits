@@ -104,11 +104,11 @@ class MovementCommands(private val plugin: PostBits) {
         
         if (flying) {
             player.flySpeed = minecraftSpeed
-            MessageUtil.sendMessage(player, "utility.speed_fly_success", 
+            MessageUtil.sendMessage(player, "utility.speed_fly_success",
                 "{speed}" to speed.toString())
         } else {
             player.walkSpeed = minecraftSpeed
-            MessageUtil.sendMessage(player, "utility.speed_walk_success", 
+            MessageUtil.sendMessage(player, "utility.speed_walk_success",
                 "{speed}" to speed.toString())
         }
         

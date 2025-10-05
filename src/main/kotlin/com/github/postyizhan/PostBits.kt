@@ -10,6 +10,7 @@ import com.github.postyizhan.util.hook.OraxenHook
 import com.github.postyizhan.module.*
 import com.github.postyizhan.util.MessageUtil
 import com.github.postyizhan.util.UpdateChecker
+import org.bstats.bukkit.Metrics
 import org.bukkit.command.CommandSender
 import org.bukkit.plugin.java.JavaPlugin
 
@@ -106,6 +107,20 @@ class PostBits : JavaPlugin() {
                         MessageUtil.getMessage("system.updater.up_to_date")
                     ))
                 }
+            }
+        }
+
+        // 初始化 Bstats 统计
+        try {
+            @Suppress("UNUSED_VARIABLE")
+            val metrics = Metrics(this, 27486)
+            if (debugEnabled) {
+                logger.info("Debug: Bstats metrics initialized successfully")
+            }
+        } catch (e: Exception) {
+            logger.warning("Failed to initialize Bstats: ${e.message}")
+            if (debugEnabled) {
+                e.printStackTrace()
             }
         }
 

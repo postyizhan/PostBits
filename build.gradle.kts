@@ -18,6 +18,9 @@ repositories {
     // CraftEngine 仓库（使用中国镜像）
     maven("https://repo-momi.gtemc.cn/releases/")
     maven("https://repo.gtemc.net/releases/") // 备用镜像
+
+    // Bstats 仓库
+    maven("https://repo.codemc.io/repository/maven-public/")
 }
 
 dependencies {
@@ -35,6 +38,9 @@ dependencies {
 
     // Oraxen
     compileOnly("io.th0rgal:oraxen:1.189.0")
+
+    // Bstats
+    implementation("org.bstats:bstats-bukkit:3.1.0")
 }
 
 java {

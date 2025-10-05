@@ -76,5 +76,3 @@ class PlayerStateCommands(private val plugin: PostBits) {
         return true
     }
 }
-
-
