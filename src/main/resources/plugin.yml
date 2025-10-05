@@ -106,6 +106,15 @@ permissions:
   postbits.utility.vanish.see:
     description: 'Permission to see vanished players'
     default: op
+  postbits.utility.vanish.effect:
+    description: 'Permission to get invisibility potion effect when vanished'
+    default: op
+  postbits.utility.vanish.onjoin:
+    description: 'Permission to auto-vanish on join'
+    default: false
+  postbits.utility.sleepingignored:
+    description: 'Permission to be ignored when sleeping'
+    default: op
   postbits.portabletools:
     description: 'Access to all portable tools'
     default: op

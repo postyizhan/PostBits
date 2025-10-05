@@ -17,7 +17,7 @@ class UtilityService(private val plugin: PostBits) {
     val playerStateCommands = PlayerStateCommands(plugin)
     val itemCommands = ItemCommands(plugin)
     val movementCommands = MovementCommands(plugin)
-    val visibilityCommands = VisibilityCommands(plugin, plugin.getHookManager())
+    val visibilityCommands = VisibilityCommands(plugin)
 
     fun initialize() {
         if (plugin.isDebugEnabled()) {

@@ -93,6 +93,10 @@ modules:
   # 实用命令模块
   utility:
     enabled: false
+    # Vanish 隐身功能设置
+    vanish:
+      # 隐身玩家是否不影响睡眠
+      sleep-ignores-vanished-players: true
 
   # 随身工具模块
   portabletools:
