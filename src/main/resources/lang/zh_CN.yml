@@ -101,6 +101,11 @@ utility:
   vanish_disabled: "{prefix}&7你不再隐身了"
   vanish_auto_enabled: "{prefix}&7已自动隐身"
   vanish_permission_lost: "{prefix}&7你失去了隐身权限，已自动取消隐身"
+  
+  # /toast 命令
+  toast_help: "{prefix}&e用法: /toast <玩家名|all> <图标> <类型> <消息>"
+  toast_player_not_found: "{prefix}&c找不到玩家: {player}"
+  toast_invalid_type: "{prefix}&c无效的类型，可用类型: TASK, GOAL, CHALLENGE"
 
 # 随身工具功能消息
 portabletools:

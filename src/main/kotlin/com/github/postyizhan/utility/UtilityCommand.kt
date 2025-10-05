@@ -1,6 +1,7 @@
 package com.github.postyizhan.utility
 
 import com.github.postyizhan.PostBits
+import com.github.postyizhan.utility.commands.ToastCommand
 import org.bukkit.command.CommandSender
 
 /**
@@ -10,6 +11,8 @@ import org.bukkit.command.CommandSender
  * @author postyizhan
  */
 class UtilityCommand(private val plugin: PostBits, private val utilityService: UtilityService) {
+
+    private val toastCommand = ToastCommand(plugin)
 
     // ==================== 命令处理 ====================
 
@@ -41,6 +44,10 @@ class UtilityCommand(private val plugin: PostBits, private val utilityService: U
         return utilityService.visibilityCommands.handleVanish(sender, args)
     }
 
+    fun handleToast(sender: CommandSender, args: Array<String>): Boolean {
+        return toastCommand.execute(sender, args)
+    }
+
     // ==================== Tab 补全 ====================
 
     fun onTabComplete(command: String, args: Array<out String>): List<String> {
@@ -48,6 +55,7 @@ class UtilityCommand(private val plugin: PostBits, private val utilityService: U
             "hat" -> utilityService.itemCommands.onTabComplete(args)
             "speed" -> utilityService.movementCommands.onTabCompleteSpeed(args)
             "fly" -> utilityService.movementCommands.onTabCompleteFly(args)
+            "toast" -> toastCommand.onTabComplete(args)
             else -> emptyList()
         }
     }

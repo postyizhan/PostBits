@@ -48,6 +48,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             "speed" -> return handleUtilityCommand("speed", sender, args)
             "fly" -> return handleUtilityCommand("fly", sender, args)
             "vanish" -> return handleUtilityCommand("vanish", sender, args)
+            "toast" -> return handleUtilityCommand("toast", sender, args)
         }
         return false
     }
@@ -178,6 +179,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             "speed" -> utilityCmd.handleSpeed(sender, arrayOf(*args))
             "fly" -> utilityCmd.handleFly(sender, arrayOf(*args))
             "vanish" -> utilityCmd.handleVanish(sender, arrayOf(*args))
+            "toast" -> utilityCmd.handleToast(sender, arrayOf(*args))
             else -> false
         }
     }
@@ -243,6 +245,7 @@ class CommandManager(private val plugin: PostBits) : CommandExecutor, TabComplet
             "hat" -> return utilityCommand?.onTabComplete("hat", args) ?: emptyList()
             "speed" -> return utilityCommand?.onTabComplete("speed", args) ?: emptyList()
             "fly" -> return utilityCommand?.onTabComplete("fly", args) ?: emptyList()
+            "toast" -> return utilityCommand?.onTabComplete("toast", args) ?: emptyList()
         }
         
         if (command.name.lowercase() != "postbits") {

@@ -78,6 +78,8 @@ class PostBits : JavaPlugin() {
         getCommand("fly")?.setExecutor(commandManager)
         getCommand("fly")?.tabCompleter = commandManager
         getCommand("vanish")?.setExecutor(commandManager)
+        getCommand("toast")?.setExecutor(commandManager)
+        getCommand("toast")?.tabCompleter = commandManager
 
         // 初始化模块管理器
         moduleManager = ModuleManager(this)
