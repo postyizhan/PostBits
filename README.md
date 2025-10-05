@@ -27,6 +27,15 @@
 - `/postbits smithing` - 打开便携锻造台（需要启用随身工具模块）
 - `/postbits enderchest` - 打开便携末影箱（需要启用随身工具模块）
 
+## 模块列表
+
+- **Chair（椅子）** - 可坐在楼梯、台阶或自定义方块上
+- **InvEdit（背包编辑）** - 编辑其他玩家的背包
+- **Elevator（电梯）** - 使用特定方块快速上下传送
+- **Utility（实用命令）** - heal/fix/hat/speed/fly/vanish 等实用命令
+- **PortableTools（随身工具）** - 便携工作台、砂轮、附魔台等
+- **KeyBind（按键绑定）** - 自定义按键触发的动作（需要 ProtocolLib）
+
 ## 权限
 
 - `postbits.admin` - 所有管理权限

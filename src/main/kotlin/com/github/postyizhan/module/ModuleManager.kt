@@ -9,6 +9,8 @@ import com.github.postyizhan.utility.UtilityService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.portabletools.PortableToolsService
+import com.github.postyizhan.keybind.KeyBindService
+import com.github.postyizhan.keybind.KeyBindEventHandler
 
 /**
  * 模块管理器 - 统一管理所有功能模块的初始化和清理
@@ -39,6 +41,9 @@ class ModuleManager(private val plugin: PostBits) {
         
         // 随身工具模块
         registerModule("portabletools", PortableToolsModule(plugin))
+        
+        // 按键绑定模块
+        registerModule("keybind", KeyBindModule(plugin))
         
         // 启用所有模块
         modules.forEach { (name, module) ->
@@ -219,5 +224,28 @@ class PortableToolsModule(plugin: PostBits) : BaseModule<PortableToolsService>(p
 
     override fun onServiceCreated(service: PortableToolsService) {
         service.initialize()
+    }
+}
+
+/**
+ * 按键绑定模块
+ */
+class KeyBindModule(plugin: PostBits) : BaseModule<KeyBindService>(plugin) {
+    private var eventHandler: KeyBindEventHandler? = null
+    
+    override fun createService() = KeyBindService(plugin)
+
+    override fun onServiceCreated(service: KeyBindService) {
+        eventHandler = KeyBindEventHandler(plugin, service)
+        plugin.server.pluginManager.registerEvents(eventHandler!!, plugin)
+    }
+    
+    override fun onServiceDestroy(service: KeyBindService) {
+        // 清理事件处理器
+        eventHandler?.cleanup()
+        eventHandler = null
+        
+        // 清理服务
+        service.cleanup()
     }
 }

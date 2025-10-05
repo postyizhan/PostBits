@@ -9,7 +9,7 @@
 # 支持的语言：https://github.com/postyizhan/PostBits/tree/main/src/main/resources/lang
 language: zh_CN
 
-# 调试模式 (调试信息使用英文硬编码)
+# 调试模式
 debug: false
 
 # ===========================================
@@ -101,3 +101,37 @@ modules:
   # 随身工具模块
   portabletools:
     enabled: false
+
+  # 按键绑定模块
+  keybind:
+    enabled: false
+    # 按键绑定配置
+    # 可用的按键: sneak (Shift), swap_hand (F), sneak_swap (Shift+F), drop (Q)
+    # 可用的动作:
+    #   [message] 消息内容 - 发送消息给玩家
+    #   [sound] 声音名称[:音量:音调] - 播放声音 (例如: ENTITY_EXPERIENCE_ORB_PICKUP:1.0:1.0)
+    #   [console] 命令 - 以控制台身份执行命令 ({player} 会被替换为玩家名)
+    #   [op] 命令 - 临时给予OP权限执行命令
+    #   [player] 命令 - 以玩家身份执行命令
+    bindings:
+      # 示例: 按下 Shift 时的动作
+      sneak:
+        actions:
+          - "[message] &7你按下了 Shift!"
+          # - "[sound] ENTITY_EXPERIENCE_ORB_PICKUP:1.0:1.0"
+          # - "[player] help"
+      
+      # 示例: 按下 F 时的动作
+      swap_hand:
+        actions:
+          - "[message] &7你按下了 F!"
+      
+      # 示例: 按下 Shift+F 时的动作
+      sneak_swap:
+        actions:
+          - "[message] &7你按下了 Shift+F!"
+      
+      # 示例: 按下 Q 时的动作
+      drop:
+        actions:
+          - "[message] &7你按下了 Q!"

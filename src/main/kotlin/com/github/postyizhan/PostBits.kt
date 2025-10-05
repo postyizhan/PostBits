@@ -229,6 +229,11 @@ class PostBits : JavaPlugin() {
     fun getPortableToolsService() = moduleManager.getModule<PortableToolsModule>("portabletools")?.getService()
     
     /**
+     * 获取按键绑定服务
+     */
+    fun getKeyBindService() = moduleManager.getModule<KeyBindModule>("keybind")?.getService()
+    
+    /**
      * 获取插件挂钩管理器
      */
     fun getHookManager(): HookManager = hookManager
