@@ -13,7 +13,11 @@ import org.bukkit.entity.Player
 
 /**
  * Toast 通知命令
- * 用法: /toast <玩家名|all> <图标> <类型> <消息>
+ * 用法: /toast <玩家名|all> <图标> <类型> <消息> [model_data] [glow]
+ * 
+ * 参数说明：
+ * - model_data: 可选，CustomModelData 值（整数、浮点数或字符串）
+ * - glow: 可选，true/false 表示图标是否发光
  *
  * @author postyizhan
  */
@@ -38,9 +42,38 @@ class ToastCommand(private val plugin: PostBits) : CommandExecutor, TabCompleter
         }
 
         val target = args[0]
-        val icon = args[1]
+        val icon = args[1].lowercase()
         val typeStr = args[2].uppercase()
-        val message = args.copyOfRange(3, args.size).joinToString(" ")
+        
+        // 查找消息结束位置（检查是否有可选参数）
+        var messageEndIndex = args.size
+        var modelData: Any? = null
+        var glowing = false
+        
+        // 从后往前检查可选参数
+        // 最后一个参数可能是 glow (true/false)
+        if (args.size >= 5) {
+            val lastArg = args[args.size - 1]
+            if (lastArg.equals("true", ignoreCase = true) || lastArg.equals("false", ignoreCase = true)) {
+                glowing = lastArg.toBoolean()
+                messageEndIndex--
+            }
+        }
+        
+        // 倒数第二个参数可能是 model_data（数字或字符串）
+        if (messageEndIndex > 4) {
+            val potentialModelData = args[messageEndIndex - 1]
+            // 尝试解析为整数、浮点数或字符串
+            modelData = potentialModelData.toIntOrNull()
+                ?: potentialModelData.toFloatOrNull()
+                ?: if (potentialModelData.matches(Regex("[a-zA-Z0-9_]+"))) potentialModelData else null
+            
+            if (modelData != null) {
+                messageEndIndex--
+            }
+        }
+        
+        val message = args.copyOfRange(3, messageEndIndex).joinToString(" ")
 
         // 解析 Toast 类型
         val toastType = try {
@@ -58,12 +91,17 @@ class ToastCommand(private val plugin: PostBits) : CommandExecutor, TabCompleter
                 return true
             }
 
-            toastManager.createToast()
+            val builder = toastManager.createToast()
                 .withIcon(icon)
                 .withMessage(message)
                 .withStyle(toastType)
-                .toAll()
-                .show()
+                .setGlowing(glowing)
+            
+            if (modelData != null) {
+                builder.withModelData(modelData)
+            }
+            
+            builder.toAll().show()
         } else {
             // 发送给指定玩家
             val targetPlayer = Bukkit.getPlayer(target)
@@ -72,12 +110,17 @@ class ToastCommand(private val plugin: PostBits) : CommandExecutor, TabCompleter
                 return true
             }
 
-            toastManager.createToast()
+            val builder = toastManager.createToast()
                 .withIcon(icon)
                 .withMessage(message)
                 .withStyle(toastType)
-                .to(targetPlayer)
-                .show()
+                .setGlowing(glowing)
+            
+            if (modelData != null) {
+                builder.withModelData(modelData)
+            }
+            
+            builder.to(targetPlayer).show()
         }
 
         return true
@@ -118,7 +161,7 @@ class ToastCommand(private val plugin: PostBits) : CommandExecutor, TabCompleter
             2 -> {
                 // 第二个参数：物品图标
                 listOf("diamond", "emerald", "paper", "gold_ingot", "iron_ingot",
-                    "redstone", "lapis_lazuli", "heart_of_the_sea", "nether_star")
+                    "redstone", "lapis_lazuli", "heart_of_the_sea", "nether_star", "book")
                     .filter { it.startsWith(args[1], ignoreCase = true) }
             }
             3 -> {
@@ -126,8 +169,19 @@ class ToastCommand(private val plugin: PostBits) : CommandExecutor, TabCompleter
                 listOf("TASK", "GOAL", "CHALLENGE")
                     .filter { it.startsWith(args[2], ignoreCase = true) }
             }
+            4 -> {
+                // 第四个参数：消息（提示）
+                listOf("<消息>")
+            }
+            5 -> {
+                // 第五个参数：可选的 CustomModelData（提示）
+                listOf("<model_data>", "1", "100", "1000")
+            }
+            6 -> {
+                // 第六个参数：可选的发光效果
+                listOf("true", "false")
+            }
             else -> emptyList()
         }
     }
 }
-
