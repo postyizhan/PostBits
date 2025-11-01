@@ -47,14 +47,11 @@ chair:
 
 # 背包编辑功能消息
 invedit:
-  gui_title: "&6编辑 {player} 的背包"
-  opened_inventory: "{prefix}&7已打开 &e{player} &7的背包编辑界面"
-  changes_saved: "{prefix}&7已保存对 &e{player} &7背包的更改"
-  changes_cancelled: "{prefix}&7已取消对背包的编辑"
-  save_failed: "{prefix}&7保存背包更改失败"
+  gui_title: "&7{player}的背包"
   target_offline: "{prefix}&7目标玩家已下线"
   target_not_found: "{prefix}&7找不到目标玩家"
   cannot_edit_self: "{prefix}&7你不能编辑自己的背包"
+  target_is_editing: "{prefix}&7该玩家正在编辑其他人的背包，无法编辑"
   invalid_usage: "{prefix}&7用法: /postbits invedit <玩家名>"
 
 # 电梯功能消息

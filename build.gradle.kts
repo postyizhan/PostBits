@@ -40,7 +40,7 @@ dependencies {
     compileOnly("io.th0rgal:oraxen:1.189.0")
 
     // Bstats
-    implementation("org.bstats:bstats-bukkit:3.1.0")
+    implementation("org.bstats:bstats-bukkit:3.0.2")
 }
 
 java {

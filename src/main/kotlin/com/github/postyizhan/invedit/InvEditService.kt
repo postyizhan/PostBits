@@ -3,24 +3,32 @@ package com.github.postyizhan.invedit
 import com.github.postyizhan.PostBits
 import com.github.postyizhan.util.MessageUtil
 import org.bukkit.Bukkit
-import org.bukkit.ChatColor
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.inventory.Inventory
 import org.bukkit.inventory.ItemStack
-import org.bukkit.inventory.meta.ItemMeta
 import java.util.*
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * 背包编辑服务类
- * 负责管理背包编辑功能的核心逻辑
  *
  * @author postyizhan
  */
 class InvEditService(private val plugin: PostBits) {
 
-    private val editingSessions = mutableMapOf<UUID, Player>() // 编辑者 -> 被编辑者
-    private val editingGuis = mutableMapOf<UUID, Inventory>() // 编辑者 -> GUI界面
+    // 编辑会话数据
+    data class EditSession(
+        val editor: Player,           // 编辑者
+        val target: Player,           // 被编辑的玩家
+        val gui: Inventory            // 编辑GUI
+    )
+    
+    private val editingSessions = ConcurrentHashMap<UUID, EditSession>()
+    
+    private val targetToEditors = ConcurrentHashMap<UUID, MutableSet<UUID>>()
+    
+    private val guiToEditor = ConcurrentHashMap<Inventory, UUID>()
 
     /**
      * 打开玩家背包编辑界面
@@ -31,168 +39,209 @@ class InvEditService(private val plugin: PostBits) {
             MessageUtil.sendMessage(editor, "invedit.cannot_edit_self")
             return false
         }
+        if (isEditing(target)) {
+            MessageUtil.sendMessage(editor, "invedit.target_is_editing")
+            return false
+        }
         
-        // 创建GUI界面
-        val gui = createInventoryGUI(target)
+        closeEditingSession(editor)
         
-        // 记录编辑会话
-        editingSessions[editor.uniqueId] = target
-        editingGuis[editor.uniqueId] = gui
-        
-        // 打开GUI
+        val gui = createEditingGui(target)
         editor.openInventory(gui)
         
-        MessageUtil.sendMessage(editor, "invedit.opened_inventory", "{player}" to target.name)
+        val session = EditSession(editor, target, gui)
+        editingSessions[editor.uniqueId] = session
+        guiToEditor[gui] = editor.uniqueId
+        
+        targetToEditors.computeIfAbsent(target.uniqueId) { ConcurrentHashMap.newKeySet() }
+            .add(editor.uniqueId)
         
         if (plugin.isDebugEnabled()) {
-            plugin.logger.info("Debug: ${editor.name} opened inventory editor for ${target.name}")
+            plugin.logger.info("Debug: ${editor.name} opened event-driven inventory editor for ${target.name}")
         }
         
         return true
     }
     
     /**
-     * 创建背包编辑GUI
+     * 创建编辑GUI
+     * 布局：
+     * - 第1-4行：背包物品（36格）
+     * - 第5行：装备（4格）+ 主副手（2格）+ 分隔符
      */
-    private fun createInventoryGUI(target: Player): Inventory {
-        val title = MessageUtil.getMessage("invedit.gui_title").replace("{player}", target.name)
+    private fun createEditingGui(target: Player): Inventory {
+        val title = MessageUtil.getMessage("invedit.gui_title")
+            .replace("{player}", target.name)
         val gui = Bukkit.createInventory(null, 54, MessageUtil.color(title))
         
-        // 复制目标玩家的背包内容 (0-35: 背包, 36-39: 盔甲)
-        val targetInventory = target.inventory.contents
-        val targetArmor = target.inventory.armorContents
-        
-        // 放置背包物品 (前36个槽位)
-        for (i in 0 until 36) {
-            if (i < targetInventory.size) {
-                gui.setItem(i, targetInventory[i])
-            }
-        }
-        
-        // 放置盔甲物品 (36-39槽位)
-        for (i in 0 until 4) {
-            if (i < targetArmor.size) {
-                gui.setItem(36 + i, targetArmor[i])
-            }
-        }
-        
-        // 放置副手物品 (40槽位)
-        gui.setItem(40, target.inventory.itemInOffHand)
-        
-        // 添加分隔符和说明
-        addGuiDecorations(gui)
+        // 初始化GUI内容
+        syncInventoryToGui(target, gui)
         
         return gui
     }
     
     /**
-     * 添加GUI装饰和说明
+     * 获取编辑者的GUI（用于事件处理）
      */
-    private fun addGuiDecorations(gui: Inventory) {
-        // 创建分隔符
-        val separator = ItemStack(Material.GRAY_STAINED_GLASS_PANE).apply {
-            itemMeta = itemMeta?.apply {
-                setDisplayName(MessageUtil.color("&7分隔符"))
-            }
-        }
-        
-        // 放置分隔符 (41-44槽位)
-        for (i in 41..44) {
-            gui.setItem(i, separator)
-        }
-        
-        // 创建说明物品
-        val info = ItemStack(Material.BOOK).apply {
-            itemMeta = itemMeta?.apply {
-                setDisplayName(MessageUtil.color("&6背包编辑说明"))
-                lore = listOf(
-                    MessageUtil.color("&7槽位 0-35: 背包物品"),
-                    MessageUtil.color("&7槽位 36: 靴子"),
-                    MessageUtil.color("&7槽位 37: 护腿"),
-                    MessageUtil.color("&7槽位 38: 胸甲"),
-                    MessageUtil.color("&7槽位 39: 头盔"),
-                    MessageUtil.color("&7槽位 40: 副手"),
-                    MessageUtil.color("&e点击保存按钮应用更改")
-                )
-            }
-        }
-        gui.setItem(45, info)
-        
-        // 创建保存按钮
-        val saveButton = ItemStack(Material.EMERALD_BLOCK).apply {
-            itemMeta = itemMeta?.apply {
-                setDisplayName(MessageUtil.color("&a保存更改"))
-                lore = listOf(
-                    MessageUtil.color("&7点击保存对背包的修改")
-                )
-            }
-        }
-        gui.setItem(49, saveButton)
-        
-        // 创建取消按钮
-        val cancelButton = ItemStack(Material.REDSTONE_BLOCK).apply {
-            itemMeta = itemMeta?.apply {
-                setDisplayName(MessageUtil.color("&c取消编辑"))
-                lore = listOf(
-                    MessageUtil.color("&7关闭界面而不保存更改")
-                )
-            }
-        }
-        gui.setItem(53, cancelButton)
+    fun getEditorGui(editor: Player): Inventory? {
+        return editingSessions[editor.uniqueId]?.gui
     }
     
     /**
-     * 保存背包更改
+     * 通过GUI获取编辑者（用于事件处理）
      */
-    fun saveInventoryChanges(editor: Player): Boolean {
-        val target = editingSessions[editor.uniqueId]
-        val gui = editingGuis[editor.uniqueId]
+    fun getEditorByGui(gui: Inventory): Player? {
+        val editorId = guiToEditor[gui] ?: return null
+        return plugin.server.getPlayer(editorId)
+    }
+    
+    /**
+     * 当目标玩家的背包发生变化时，同步到所有编辑者的GUI
+     * 由事件处理器调用
+     */
+    fun onTargetInventoryChanged(target: Player) {
+        val editorIds = targetToEditors[target.uniqueId] ?: return
         
-        if (target == null || gui == null) {
-            return false
+        editorIds.forEach { editorId ->
+            val session = editingSessions[editorId] ?: return@forEach
+            if (session.target.uniqueId == target.uniqueId) {
+                syncInventoryToGui(target, session.gui)
+            }
         }
         
-        // 检查目标玩家是否仍在线
-        if (!target.isOnline) {
-            MessageUtil.sendMessage(editor, "invedit.target_offline")
-            return false
+        if (plugin.isDebugEnabled()) {
+            plugin.logger.info("Debug: Synced ${target.name}'s inventory to ${editorIds.size} editor(s)")
         }
+    }
+    
+    /**
+     * 当编辑者操作GUI时，同步到目标玩家的背包
+     * 由事件处理器调用
+     */
+    fun onEditorGuiChanged(editor: Player) {
+        val session = editingSessions[editor.uniqueId] ?: return
+        syncGuiToInventory(session.target, session.gui)
+    }
+    
+    /**
+     * 将目标玩家的背包同步到GUI
+     */
+    fun syncInventoryToGui(target: Player, gui: Inventory) {
+        val targetInv = target.inventory
         
-        // 保存背包内容 (0-35)
-        val newInventory = arrayOfNulls<ItemStack>(36)
+        // 同步背包物品（0-35）-> GUI (0-35)
         for (i in 0 until 36) {
-            newInventory[i] = gui.getItem(i)
+            val item = targetInv.getItem(i)
+            gui.setItem(i, item)
         }
-        target.inventory.contents = newInventory
         
-        // 保存盔甲内容 (36-39)
+        // 同步装备（盔甲）-> GUI (36-39)
+        val armor = targetInv.armorContents
+        for (i in armor.indices) {
+            gui.setItem(36 + i, armor[i])
+        }
+        
+        // 同步副手 -> GUI (40)
+        gui.setItem(40, targetInv.itemInOffHand)
+        
+        // 同步主手 -> GUI (41)
+        gui.setItem(41, targetInv.itemInMainHand)
+        
+        // 添加装饰分隔符（42-53）
+        for (i in 42 until 54) {
+            if (gui.getItem(i)?.type != Material.GRAY_STAINED_GLASS_PANE) {
+                gui.setItem(i, createSeparator())
+            }
+        }
+    }
+    
+    /**
+     * 将GUI的内容同步到目标玩家的背包
+     */
+    fun syncGuiToInventory(target: Player, gui: Inventory) {
+        val targetInv = target.inventory
+        
+        // 同步背包物品 GUI (0-35) -> 背包 (0-35)
+        for (i in 0 until 36) {
+            val guiItem = gui.getItem(i)
+            val invItem = targetInv.getItem(i)
+            
+            // 只在不同时才更新，避免不必要的刷新
+            if (!isSameItem(guiItem, invItem)) {
+                targetInv.setItem(i, guiItem)
+            }
+        }
+        
+        // 同步装备 GUI (36-39) -> 盔甲
         val newArmor = arrayOfNulls<ItemStack>(4)
         for (i in 0 until 4) {
             newArmor[i] = gui.getItem(36 + i)
         }
-        target.inventory.armorContents = newArmor
         
-        // 保存副手物品 (40)
-        target.inventory.setItemInOffHand(gui.getItem(40))
-        
-        // 更新玩家显示
-        target.updateInventory()
-        
-        MessageUtil.sendMessage(editor, "invedit.changes_saved", "{player}" to target.name)
-        
-        if (plugin.isDebugEnabled()) {
-            plugin.logger.info("Debug: ${editor.name} saved inventory changes for ${target.name}")
+        // 检查是否需要更新装备
+        val currentArmor = targetInv.armorContents
+        var armorChanged = false
+        for (i in 0 until 4) {
+            if (!isSameItem(newArmor[i], currentArmor.getOrNull(i))) {
+                armorChanged = true
+                break
+            }
+        }
+        if (armorChanged) {
+            targetInv.armorContents = newArmor
         }
         
-        return true
+        // 同步副手 GUI (40) -> 副手
+        val newOffHand = gui.getItem(40)
+        if (!isSameItem(newOffHand, targetInv.itemInOffHand)) {
+            targetInv.setItemInOffHand(newOffHand)
+        }
+        
+        // 同步主手 GUI (41) -> 主手
+        val newMainHand = gui.getItem(41)
+        if (!isSameItem(newMainHand, targetInv.itemInMainHand)) {
+            targetInv.setItemInMainHand(newMainHand)
+        }
+    }
+    
+    /**
+     * 创建分隔符物品
+     */
+    private fun createSeparator(): ItemStack {
+        return ItemStack(Material.GRAY_STAINED_GLASS_PANE).apply {
+            itemMeta = itemMeta?.apply {
+                setDisplayName(MessageUtil.color("&7"))
+            }
+        }
+    }
+    
+    /**
+     * 比较两个物品是否相同
+     */
+    private fun isSameItem(item1: ItemStack?, item2: ItemStack?): Boolean {
+        if (item1 == null && item2 == null) return true
+        if (item1 == null || item2 == null) return false
+        return item1.isSimilar(item2) && item1.amount == item2.amount
     }
     
     /**
      * 关闭编辑会话
      */
     fun closeEditingSession(editor: Player) {
-        editingSessions.remove(editor.uniqueId)
-        editingGuis.remove(editor.uniqueId)
+        val session = editingSessions.remove(editor.uniqueId) ?: return
+        
+        // 从GUI映射中移除
+        guiToEditor.remove(session.gui)
+        
+        // 从目标玩家的编辑者列表中移除
+        val targetEditors = targetToEditors[session.target.uniqueId]
+        if (targetEditors != null) {
+            targetEditors.remove(editor.uniqueId)
+            // 如果没有编辑者了，移除整个条目
+            if (targetEditors.isEmpty()) {
+                targetToEditors.remove(session.target.uniqueId)
+            }
+        }
         
         if (plugin.isDebugEnabled()) {
             plugin.logger.info("Debug: Closed editing session for ${editor.name}")
@@ -210,14 +259,23 @@ class InvEditService(private val plugin: PostBits) {
      * 获取正在编辑的目标玩家
      */
     fun getEditingTarget(editor: Player): Player? {
-        return editingSessions[editor.uniqueId]
+        return editingSessions[editor.uniqueId]?.target
     }
     
     /**
-     * 获取编辑GUI
+     * 检查玩家的背包是否正在被编辑
      */
-    fun getEditingGui(editor: Player): Inventory? {
-        return editingGuis[editor.uniqueId]
+    fun isBeingEdited(target: Player): Boolean {
+        val editors = targetToEditors[target.uniqueId]
+        return editors != null && editors.isNotEmpty()
+    }
+    
+    /**
+     * 获取正在编辑指定玩家的所有编辑者
+     */
+    fun getEditors(target: Player): Set<Player> {
+        val editorIds = targetToEditors[target.uniqueId] ?: return emptySet()
+        return editorIds.mapNotNull { plugin.server.getPlayer(it) }.toSet()
     }
     
     /**
@@ -227,23 +285,26 @@ class InvEditService(private val plugin: PostBits) {
         // 如果是编辑者下线，清理会话
         closeEditingSession(player)
         
-        // 如果是被编辑者下线，通知所有编辑者
-        val editorsToRemove = mutableListOf<UUID>()
-        for ((editorId, target) in editingSessions) {
-            if (target == player) {
-                val editor = plugin.server.getPlayer(editorId)
-                if (editor != null) {
-                    editor.closeInventory()
-                    MessageUtil.sendMessage(editor, "invedit.target_offline")
-                }
-                editorsToRemove.add(editorId)
+        // 如果是被编辑者下线，通知所有编辑者并清理会话
+        val editorIds = targetToEditors.remove(player.uniqueId) ?: return
+        
+        editorIds.forEach { editorId ->
+            val editor = plugin.server.getPlayer(editorId)
+            if (editor != null && editor.isOnline) {
+                // 关闭编辑者的背包界面
+                editor.closeInventory()
+                MessageUtil.sendMessage(editor, "invedit.target_offline")
+            }
+            
+            // 清理编辑会话
+            val session = editingSessions.remove(editorId)
+            if (session != null) {
+                guiToEditor.remove(session.gui)
             }
         }
         
-        // 清理会话
-        editorsToRemove.forEach { editorId ->
-            editingSessions.remove(editorId)
-            editingGuis.remove(editorId)
+        if (plugin.isDebugEnabled()) {
+            plugin.logger.info("Debug: Cleaned up editing sessions for offline player ${player.name}")
         }
     }
     
@@ -252,10 +313,11 @@ class InvEditService(private val plugin: PostBits) {
      */
     fun cleanup() {
         editingSessions.clear()
-        editingGuis.clear()
+        targetToEditors.clear()
+        guiToEditor.clear()
         
         if (plugin.isDebugEnabled()) {
-            plugin.logger.info("Debug: InvEdit service cleaned up")
+            plugin.logger.info("Debug: InvEdit service cleaned up (event-driven sync)")
         }
     }
 }

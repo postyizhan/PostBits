@@ -35,6 +35,7 @@
 - **Utility（实用命令）** - heal/fix/hat/speed/fly/vanish 等实用命令
 - **PortableTools（随身工具）** - 便携工作台、砂轮、附魔台等
 - **KeyBind（按键绑定）** - 自定义按键触发的动作（需要 ProtocolLib）
+- **Biome（生物群系）** - 进入特定生物群系时触发动作（支持 1.13-1.21+ 原版生物群系）
 
 ## 权限
 
@@ -52,3 +53,9 @@
 - `postbits.portabletools.enchanting` - 便携附魔台使用权限
 - `postbits.portabletools.smithing` - 便携锻造台使用权限
 - `postbits.portabletools.enderchest` - 便携末影箱使用权限
+
+## 克隆
+
+```
+git clone --recursive https://github.com/postyizhan/PostBits.git
+```

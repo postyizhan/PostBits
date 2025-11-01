@@ -1,21 +1,21 @@
 package com.github.postyizhan.invedit
 
 import com.github.postyizhan.PostBits
-import com.github.postyizhan.util.MessageUtil
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.EventPriority
 import org.bukkit.event.Listener
+import org.bukkit.event.entity.EntityPickupItemEvent
 import org.bukkit.event.inventory.InventoryClickEvent
 import org.bukkit.event.inventory.InventoryCloseEvent
-import org.bukkit.event.player.PlayerQuitEvent
-import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.ItemStack
+import org.bukkit.event.inventory.InventoryDragEvent
+import org.bukkit.event.player.*
 
 /**
- * 背包编辑功能事件监听器
- * 处理背包编辑GUI的所有交互事件
+ * 背包编辑功能事件监听器 - 事件驱动实时同步版本
+ * 监听目标玩家和编辑者的各种背包变化事件，实现即时同步
  *
  * @author postyizhan
  */
@@ -25,110 +25,165 @@ class InvEditEventHandler(
 ) : Listener {
     
     /**
-     * 处理GUI点击事件
+     * 处理编辑者GUI点击事件
+     * 1. 限制只能编辑物品槽位，不能点击分隔符
+     * 2. 点击后立即同步到目标玩家
      */
     @EventHandler(priority = EventPriority.NORMAL)
     fun onInventoryClick(event: InventoryClickEvent) {
         val player = event.whoClicked as? Player ?: return
         
-        // 检查是否是背包编辑GUI
-        if (!invEditService.isEditing(player)) {
+        // 检查是否是编辑者
+        if (invEditService.isEditing(player)) {
+            handleEditorClick(event, player)
             return
         }
         
-        val clickedInventory = event.clickedInventory
-        val editingGui = invEditService.getEditingGui(player)
+        // 检查是否是被编辑者
+        if (invEditService.isBeingEdited(player)) {
+            handleTargetClick(event, player)
+        }
+    }
+    
+    /**
+     * 处理编辑者在GUI中的点击
+     */
+    private fun handleEditorClick(event: InventoryClickEvent, editor: Player) {
+        val clickedInv = event.clickedInventory ?: return
+        val topInv = event.view.topInventory
         
-        // 如果点击的不是编辑GUI，允许正常操作
-        if (clickedInventory == null || clickedInventory != editingGui) {
+        // 只处理点击编辑GUI的情况
+        if (clickedInv != topInv) {
             return
         }
         
         val slot = event.slot
-        val clickedItem = event.currentItem
         
-        // 处理特殊按钮点击
-        if (clickedItem != null && clickedItem.type != Material.AIR) {
-            when {
-                // 保存按钮 (槽位49)
-                slot == 49 && clickedItem.type == Material.EMERALD_BLOCK -> {
-                    event.isCancelled = true
-                    handleSaveClick(player)
-                    return
+        // 允许编辑的槽位：0-41（背包、装备、主副手）
+        // 禁止操作的槽位：42-53（分隔符）
+        if (slot in 42..53) {
+            event.isCancelled = true
+            
+            // 如果点击的是分隔符，阻止拿取
+            val clickedItem = event.currentItem
+            if (clickedItem?.type == Material.GRAY_STAINED_GLASS_PANE) {
+                if (plugin.isDebugEnabled()) {
+                    plugin.logger.info("Debug: ${editor.name} tried to click separator at slot $slot")
                 }
-                
-                // 取消按钮 (槽位53)
-                slot == 53 && clickedItem.type == Material.REDSTONE_BLOCK -> {
-                    event.isCancelled = true
-                    handleCancelClick(player)
-                    return
-                }
-                
-                // 说明物品 (槽位45)
-                slot == 45 && clickedItem.type == Material.BOOK -> {
-                    event.isCancelled = true
-                    return
-                }
-                
-                // 分隔符 (槽位41-44)
-                slot in 41..44 && clickedItem.type == Material.GRAY_STAINED_GLASS_PANE -> {
-                    event.isCancelled = true
-                    return
-                }
-            }
-        }
-        
-        // 对于可编辑的槽位 (0-40)，允许正常编辑
-        if (slot in 0..40) {
-            // 这些槽位可以正常编辑，不取消事件
-            if (plugin.isDebugEnabled()) {
-                plugin.logger.info("Debug: ${player.name} modified slot $slot in inventory editor")
             }
             return
         }
         
-        // 其他槽位禁止操作
-        event.isCancelled = true
+        // 槽位 0-41 允许正常操作，下一tick同步到目标玩家
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            invEditService.onEditorGuiChanged(editor)
+        })
     }
     
     /**
-     * 处理保存按钮点击
+     * 处理被编辑者在自己背包中的点击
      */
-    private fun handleSaveClick(player: Player) {
-        if (invEditService.saveInventoryChanges(player)) {
-            val target = invEditService.getEditingTarget(player)
-            if (target != null) {
-                MessageUtil.sendMessage(player, "invedit.changes_saved", "{player}" to target.name)
-            }
-        } else {
-            MessageUtil.sendMessage(player, "invedit.save_failed")
-        }
+    @Suppress("UNUSED_PARAMETER")
+    private fun handleTargetClick(event: InventoryClickEvent, target: Player) {
+        // 下一tick同步到所有编辑者的GUI
+        Bukkit.getScheduler().runTask(plugin, Runnable {
+            invEditService.onTargetInventoryChanged(target)
+        })
+    }
+    
+    /**
+     * 处理编辑者的拖拽事件
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onInventoryDrag(event: InventoryDragEvent) {
+        val player = event.whoClicked as? Player ?: return
         
-        player.closeInventory()
+        if (invEditService.isEditing(player)) {
+            // 编辑者拖拽，同步到目标玩家
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onEditorGuiChanged(player)
+            })
+        } else if (invEditService.isBeingEdited(player)) {
+            // 被编辑者操作，同步到编辑者
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onTargetInventoryChanged(player)
+            })
+        }
     }
     
     /**
-     * 处理取消按钮点击
+     * 处理目标玩家捡起物品
      */
-    private fun handleCancelClick(player: Player) {
-        MessageUtil.sendMessage(player, "invedit.changes_cancelled")
-        player.closeInventory()
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onEntityPickupItem(event: EntityPickupItemEvent) {
+        val player = event.entity as? Player ?: return
+        
+        if (invEditService.isBeingEdited(player)) {
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onTargetInventoryChanged(player)
+            })
+        }
     }
     
     /**
-     * 处理GUI关闭事件
+     * 处理目标玩家丢弃物品
      */
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onPlayerDropItem(event: PlayerDropItemEvent) {
+        val player = event.player
+        
+        if (invEditService.isBeingEdited(player)) {
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onTargetInventoryChanged(player)
+            })
+        }
+    }
+    
+    /**
+     * 处理目标玩家切换主副手
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onPlayerSwapHandItems(event: PlayerSwapHandItemsEvent) {
+        val player = event.player
+        
+        if (invEditService.isBeingEdited(player)) {
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onTargetInventoryChanged(player)
+            })
+        }
+    }
+    
+    /**
+     * 处理目标玩家切换手持物品栏
+     */
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    fun onPlayerItemHeld(event: PlayerItemHeldEvent) {
+        val player = event.player
+        
+        if (invEditService.isBeingEdited(player)) {
+            // 切换快捷栏会改变主手物品
+            Bukkit.getScheduler().runTask(plugin, Runnable {
+                invEditService.onTargetInventoryChanged(player)
+            })
+        }
+    }
+    
+    /**
+     * 处理背包关闭事件
+     * 当编辑者关闭GUI时，清理编辑会话
+     */
+    @EventHandler(priority = EventPriority.MONITOR)
     fun onInventoryClose(event: InventoryCloseEvent) {
         val player = event.player as? Player ?: return
         
-        // 检查是否是背包编辑GUI
+        // 检查是否正在编辑
         if (invEditService.isEditing(player)) {
             // 清理编辑会话
             invEditService.closeEditingSession(player)
             
             if (plugin.isDebugEnabled()) {
-                plugin.logger.info("Debug: ${player.name} closed inventory editor")
+                val target = invEditService.getEditingTarget(player)
+                plugin.logger.info("Debug: ${player.name} closed inventory editor${if (target != null) " for ${target.name}" else ""}")
             }
         }
     }
@@ -136,7 +191,7 @@ class InvEditEventHandler(
     /**
      * 处理玩家退出事件
      */
-    @EventHandler(priority = EventPriority.NORMAL)
+    @EventHandler(priority = EventPriority.MONITOR)
     fun onPlayerQuit(event: PlayerQuitEvent) {
         invEditService.onPlayerQuit(event.player)
     }
