@@ -26,7 +26,6 @@ class ItemsAdderHook : PluginHook {
             // 检查 ItemsAdder 是否已加载
             val itemsAdder = Bukkit.getPluginManager().getPlugin("ItemsAdder")
             if (itemsAdder == null || !itemsAdder.isEnabled) {
-                plugin.logger.info("[ItemsAdder] Plugin not found or not enabled")
                 return false
             }
             

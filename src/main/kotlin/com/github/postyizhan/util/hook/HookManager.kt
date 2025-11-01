@@ -1,5 +1,6 @@
 package com.github.postyizhan.util.hook
 
+import com.github.postyizhan.util.MessageUtil
 import org.bukkit.plugin.Plugin
 
 /**
@@ -38,21 +39,49 @@ class HookManager(private val plugin: Plugin) {
         
         // 初始化所有挂钩
         hooks.values.forEach { hook ->
-                try {
-                    if (hook.initialize(plugin)) {
-                        plugin.logger.info("[HookManager] ✓ ${hook.pluginName} hook initialized successfully")
-                    } else {
+            try {
+                val result = hook.initialize(plugin)
+                
+                when {
+                    result == true -> {
+                        // 挂钩成功
+                        val message = MessageUtil.getMessage("system.hooks.enabled")
+                            .replace("{0}", hook.pluginName)
+                        plugin.server.consoleSender.sendMessage(MessageUtil.color(message))
+                    }
+                    result == false && isPluginPresent(hook.pluginName) -> {
+                        // 插件存在但挂钩失败 - 显示 disabled
+                        val message = MessageUtil.getMessage("system.hooks.disabled")
+                            .replace("{0}", hook.pluginName)
+                        plugin.server.consoleSender.sendMessage(MessageUtil.color(message))
+                    }
+                    else -> {
+                        // 插件不存在，不显示消息
                         if (plugin is com.github.postyizhan.PostBits && plugin.isDebugEnabled()) {
-                            plugin.logger.info("Debug: [HookManager] ✗ ${hook.pluginName} hook initialization skipped")
+                            plugin.logger.info("Debug: [HookManager] ${hook.pluginName} plugin not found, hook skipped")
                         }
                     }
-                } catch (e: Exception) {
-                    plugin.logger.warning("[HookManager] Failed to initialize ${hook.pluginName}: ${e.message}")
-                    if (plugin is com.github.postyizhan.PostBits && plugin.isDebugEnabled()) {
-                        e.printStackTrace()
-                    }
+                }
+            } catch (e: Exception) {
+                // 挂钩过程出现异常 - 如果插件存在则显示 disabled
+                if (isPluginPresent(hook.pluginName)) {
+                    val message = MessageUtil.getMessage("system.hooks.disabled")
+                        .replace("{0}", hook.pluginName)
+                    plugin.server.consoleSender.sendMessage(MessageUtil.color(message))
+                }
+                
+                if (plugin is com.github.postyizhan.PostBits && plugin.isDebugEnabled()) {
+                    e.printStackTrace()
                 }
             }
+        }
+    }
+    
+    /**
+     * 检查插件是否存在
+     */
+    private fun isPluginPresent(pluginName: String): Boolean {
+        return plugin.server.pluginManager.getPlugin(pluginName) != null
     }
     
     /**

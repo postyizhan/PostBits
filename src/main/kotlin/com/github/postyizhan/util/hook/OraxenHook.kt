@@ -26,7 +26,6 @@ class OraxenHook : PluginHook {
             // 检查 Oraxen 是否已加载
             val oraxen = Bukkit.getPluginManager().getPlugin("Oraxen")
             if (oraxen == null || !oraxen.isEnabled) {
-                plugin.logger.info("[Oraxen] Plugin not found or not enabled")
                 return false
             }
             

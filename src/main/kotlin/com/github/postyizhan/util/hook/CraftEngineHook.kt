@@ -26,7 +26,6 @@ class CraftEngineHook : PluginHook {
             // 检查 CraftEngine 是否已加载
             val craftEngine = Bukkit.getPluginManager().getPlugin("CraftEngine")
             if (craftEngine == null || !craftEngine.isEnabled) {
-                plugin.logger.info("[CraftEngine] Plugin not found or not enabled")
                 return false
             }
             
