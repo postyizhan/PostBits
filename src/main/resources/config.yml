@@ -102,6 +102,10 @@ modules:
   portabletools:
     enabled: false
 
+  # 潜影盒快开模块
+  shulkerbox:
+    enabled: false
+
   # 按键绑定模块
   keybind:
     enabled: false

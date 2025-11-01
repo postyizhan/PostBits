@@ -9,6 +9,8 @@ import com.github.postyizhan.utility.UtilityService
 import com.github.postyizhan.invedit.InvEditEventHandler
 import com.github.postyizhan.invedit.InvEditService
 import com.github.postyizhan.portabletools.PortableToolsService
+import com.github.postyizhan.shulkerbox.ShulkerBoxService
+import com.github.postyizhan.shulkerbox.ShulkerBoxEventHandler
 import com.github.postyizhan.keybind.KeyBindService
 import com.github.postyizhan.keybind.KeyBindEventHandler
 
@@ -41,6 +43,9 @@ class ModuleManager(private val plugin: PostBits) {
         
         // 随身工具模块
         registerModule("portabletools", PortableToolsModule(plugin))
+        
+        // 潜影盒快开模块
+        registerModule("shulkerbox", ShulkerBoxModule(plugin))
         
         // 按键绑定模块
         registerModule("keybind", KeyBindModule(plugin))
@@ -224,6 +229,18 @@ class PortableToolsModule(plugin: PostBits) : BaseModule<PortableToolsService>(p
 
     override fun onServiceCreated(service: PortableToolsService) {
         service.initialize()
+    }
+}
+
+/**
+ * 潜影盒快开模块
+ */
+class ShulkerBoxModule(plugin: PostBits) : BaseModule<ShulkerBoxService>(plugin) {
+    override fun createService() = ShulkerBoxService(plugin)
+
+    override fun onServiceCreated(service: ShulkerBoxService) {
+        val eventHandler = ShulkerBoxEventHandler(plugin, service)
+        plugin.server.pluginManager.registerEvents(eventHandler, plugin)
     }
 }
 

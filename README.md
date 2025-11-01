@@ -34,6 +34,7 @@
 - **Elevator（电梯）** - 使用特定方块快速上下传送
 - **Utility（实用命令）** - heal/fix/hat/speed/fly/vanish 等实用命令
 - **PortableTools（随身工具）** - 便携工作台、砂轮、附魔台等
+- **ShulkerBox（潜影盒快开）** - 手持潜影盒右键直接打开，无需放置
 - **KeyBind（按键绑定）** - 自定义按键触发的动作（需要 ProtocolLib）
 - **Biome（生物群系）** - 进入特定生物群系时触发动作（支持 1.13-1.21+ 原版生物群系）
 
@@ -53,6 +54,7 @@
 - `postbits.portabletools.enchanting` - 便携附魔台使用权限
 - `postbits.portabletools.smithing` - 便携锻造台使用权限
 - `postbits.portabletools.enderchest` - 便携末影箱使用权限
+- `postbits.shulkerbox.use` - 潜影盒快开使用权限
 
 ## 克隆
 
